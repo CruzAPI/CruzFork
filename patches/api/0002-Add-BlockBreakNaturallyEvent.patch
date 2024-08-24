@@ -1,0 +1,104 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Thu, 22 Aug 2024 22:05:33 -0300
+Subject: [PATCH] Add BlockBreakNaturallyEvent
+
+
+diff --git a/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java b/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..68d52dac361f929f715eec0c054757bef65f915d
+--- /dev/null
++++ b/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
+@@ -0,0 +1,92 @@
++package com.eul4.event.block;
++
++import org.bukkit.block.Block;
++import org.bukkit.entity.Item;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.block.BlockExpEvent;
++import org.jetbrains.annotations.ApiStatus;
++import org.jetbrains.annotations.NotNull;
++
++import java.util.List;
++
++public class BlockBreakNaturallyEvent extends BlockExpEvent implements Cancellable
++{
++    private static final HandlerList HANDLER_LIST = new HandlerList();
++    
++    private final List<Item> items;
++    
++    private boolean triggerEffect;
++    private boolean dropExperience;
++    private boolean cancelled;
++    
++    @ApiStatus.Internal
++    public BlockBreakNaturallyEvent(@NotNull Block block,
++        int xp,
++        boolean triggerEffect,
++        boolean dropExperience,
++        @NotNull List<Item> items)
++    {
++        super(block, xp);
++        this.items = items;
++        this.triggerEffect = triggerEffect;
++        this.dropExperience = dropExperience;
++    }
++    
++    /**
++     * @return If the event is cancelled, meaning the block will not be destroyed
++     */
++    @Override
++    public boolean isCancelled()
++    {
++        return this.cancelled;
++    }
++    
++    /**
++     * If the event is cancelled, the block will remain in its previous state.
++     */
++    @Override
++    public void setCancelled(boolean cancel)
++    {
++        this.cancelled = cancel;
++    }
++    
++    @NotNull
++    public List<Item> getItems()
++    {
++        return items;
++    }
++    
++    public boolean getTriggerEffect()
++    {
++        return triggerEffect;
++    }
++    
++    public void setTriggerEffect(boolean triggerEffect)
++    {
++        this.triggerEffect = triggerEffect;
++    }
++    
++    public boolean getDropExperience()
++    {
++        return dropExperience;
++    }
++    
++    public void setDropExperience(boolean dropExperience)
++    {
++        this.dropExperience = dropExperience;
++    }
++    
++    @NotNull
++    @Override
++    public HandlerList getHandlers()
++    {
++        return HANDLER_LIST;
++    }
++    
++    @NotNull
++    public static HandlerList getHandlerList()
++    {
++        return HANDLER_LIST;
++    }
++}

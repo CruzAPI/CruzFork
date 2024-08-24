@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 23 Aug 2024 10:10:11 -0300
+Subject: [PATCH] Add get radius in ExplodeEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/block/BlockExplodeEvent.java b/src/main/java/org/bukkit/event/block/BlockExplodeEvent.java
+index 254d549f956053af4264ca3a52d34a97ede4273d..a6b2236f70ac5bea899f41d57095d9f75aae3d92 100644
+--- a/src/main/java/org/bukkit/event/block/BlockExplodeEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockExplodeEvent.java
+@@ -25,14 +25,16 @@ public class BlockExplodeEvent extends BlockEvent implements Cancellable {
+     private final List<Block> blocks;
+     private float yield;
+     private final ExplosionResult result;
+-
+-    public BlockExplodeEvent(@NotNull final Block what, @NotNull final BlockState blockState, @NotNull final List<Block> blocks, final float yield, @NotNull final ExplosionResult result) {
++    private final float radius;
++    
++    public BlockExplodeEvent(@NotNull final Block what, @NotNull final BlockState blockState, @NotNull final List<Block> blocks, final float yield, @NotNull final ExplosionResult result, float radius) {
+         super(what);
+         this.blockState = blockState;
+         this.blocks = blocks;
+         this.yield = yield;
+         this.cancel = false;
+         this.result = result;
++        this.radius = radius;
+     }
+ 
+     @Override
+@@ -93,7 +95,17 @@ public class BlockExplodeEvent extends BlockEvent implements Cancellable {
+     public void setYield(float yield) {
+         this.yield = yield;
+     }
+-
++    
++    /**
++     * Returns the radius (power) of the explosion.
++     *
++     * @return The radius.
++     */
++    public float getRadius()
++    {
++        return radius;
++    }
++    
+     @NotNull
+     @Override
+     public HandlerList getHandlers() {
+diff --git a/src/main/java/org/bukkit/event/entity/EntityExplodeEvent.java b/src/main/java/org/bukkit/event/entity/EntityExplodeEvent.java
+index e468e55d426b8f81f87c0a08451d02b3866c226f..c8322bc90380406603c6e4b467bbdf6d56288b6a 100644
+--- a/src/main/java/org/bukkit/event/entity/EntityExplodeEvent.java
++++ b/src/main/java/org/bukkit/event/entity/EntityExplodeEvent.java
+@@ -21,14 +21,16 @@ public class EntityExplodeEvent extends EntityEvent implements Cancellable {
+     private final List<Block> blocks;
+     private float yield;
+     private final ExplosionResult result;
++    private final float radius;
+ 
+-    public EntityExplodeEvent(@NotNull final Entity what, @NotNull final Location location, @NotNull final List<Block> blocks, final float yield, @NotNull final ExplosionResult result) {
++    public EntityExplodeEvent(@NotNull final Entity what, @NotNull final Location location, @NotNull final List<Block> blocks, final float yield, @NotNull final ExplosionResult result, float radius) {
+         super(what);
+         this.location = location;
+         this.blocks = blocks;
+         this.yield = yield;
+         this.cancel = false;
+         this.result = result;
++        this.radius = radius;
+     }
+ 
+     @Override
+@@ -92,7 +94,17 @@ public class EntityExplodeEvent extends EntityEvent implements Cancellable {
+     public void setYield(float yield) {
+         this.yield = yield;
+     }
+-
++    
++    /**
++     * Returns the radius (power) of the explosion.
++     *
++     * @return The radius.
++     */
++    public float getRadius()
++    {
++        return radius;
++    }
++    
+     @NotNull
+     @Override
+     public HandlerList getHandlers() {

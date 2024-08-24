@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 23 Aug 2024 10:11:48 -0300
+Subject: [PATCH] Add radius to ExplodeEvents constructor
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
+index 5868d2e9e05a698c77117cf87c79b636b50fe289..490c6d687846bdd2ab5e925255657f6766c3008d 100644
+--- a/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
++++ b/src/main/java/net/minecraft/world/entity/boss/enderdragon/EnderDragon.java
+@@ -560,7 +560,7 @@ public class EnderDragon extends Mob implements Enemy {
+             return flag;
+         }
+ 
+-        EntityExplodeEvent event = CraftEventFactory.callEntityExplodeEvent(this, destroyedBlocks, 0F, this.explosionSource.getBlockInteraction());
++        EntityExplodeEvent event = CraftEventFactory.callEntityExplodeEvent(this, destroyedBlocks, 0F, this.explosionSource.getBlockInteraction(), this.explosionSource.radius());
+         if (event.isCancelled()) {
+             // This flag literally means 'Dragon hit something hard' (Obsidian, White Stone or Bedrock) and will cause the dragon to slow down.
+             // We should consider adding an event extension for it, or perhaps returning true if the event is cancelled.
+diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
+index 6c66ee69beb55e5c5755bbf4d13c256541ce4468..1db0441ab5cb826871f31a9d314cd552e2a6c5ec 100644
+--- a/src/main/java/net/minecraft/world/level/Explosion.java
++++ b/src/main/java/net/minecraft/world/level/Explosion.java
+@@ -667,14 +667,14 @@ public class Explosion {
+             List<org.bukkit.block.Block> bukkitBlocks;
+ 
+             if (this.source != null) {
+-                EntityExplodeEvent event = CraftEventFactory.callEntityExplodeEvent(this.source, blockList, this.yield, this.getBlockInteraction());
++                EntityExplodeEvent event = CraftEventFactory.callEntityExplodeEvent(this.source, blockList, this.yield, this.getBlockInteraction(), this.radius);
+                 this.wasCanceled = event.isCancelled();
+                 bukkitBlocks = event.blockList();
+                 this.yield = event.getYield();
+             } else {
+                 org.bukkit.block.Block block = location.getBlock();
+                 org.bukkit.block.BlockState blockState = (this.damageSource.getDirectBlockState() != null) ? this.damageSource.getDirectBlockState() : block.getState();
+-                BlockExplodeEvent event = CraftEventFactory.callBlockExplodeEvent(block, blockState, blockList, this.yield, this.getBlockInteraction());
++                BlockExplodeEvent event = CraftEventFactory.callBlockExplodeEvent(block, blockState, blockList, this.yield, this.getBlockInteraction(), this.radius);
+                 this.wasCanceled = event.isCancelled();
+                 bukkitBlocks = event.blockList();
+                 this.yield = event.getYield();
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 0ab53d46f0b8f3f3791dd01766738522c86932e8..d8c4b7ead2de6ea6f91c03754b04c10bad033d59 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -2088,14 +2088,14 @@ public class CraftEventFactory {
+         return !event.isCancelled();
+     }
+ 
+-    public static EntityExplodeEvent callEntityExplodeEvent(Entity entity, List<Block> blocks, float yield, Explosion.BlockInteraction effect) {
+-        EntityExplodeEvent event = new EntityExplodeEvent(entity.getBukkitEntity(), entity.getBukkitEntity().getLocation(), blocks, yield, CraftExplosionResult.toBukkit(effect));
++    public static EntityExplodeEvent callEntityExplodeEvent(Entity entity, List<Block> blocks, float yield, Explosion.BlockInteraction effect, float radius) {
++        EntityExplodeEvent event = new EntityExplodeEvent(entity.getBukkitEntity(), entity.getBukkitEntity().getLocation(), blocks, yield, CraftExplosionResult.toBukkit(effect), radius);
+         Bukkit.getPluginManager().callEvent(event);
+         return event;
+     }
+ 
+-    public static BlockExplodeEvent callBlockExplodeEvent(Block block, BlockState state, List<Block> blocks, float yield, Explosion.BlockInteraction effect) {
+-        BlockExplodeEvent event = new BlockExplodeEvent(block, state, blocks, yield, CraftExplosionResult.toBukkit(effect));
++    public static BlockExplodeEvent callBlockExplodeEvent(Block block, BlockState state, List<Block> blocks, float yield, Explosion.BlockInteraction effect, float radius) {
++        BlockExplodeEvent event = new BlockExplodeEvent(block, state, blocks, yield, CraftExplosionResult.toBukkit(effect), radius);
+         Bukkit.getPluginManager().callEvent(event);
+         return event;
+     }

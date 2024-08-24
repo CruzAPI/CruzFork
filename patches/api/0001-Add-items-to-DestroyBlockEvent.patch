@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Wed, 21 Aug 2024 22:38:05 -0300
+Subject: [PATCH] Add items to DestroyBlockEvent
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/event/block/BlockDestroyEvent.java b/src/main/java/com/destroystokyo/paper/event/block/BlockDestroyEvent.java
+index c0742b58ca2c098c27394915b624889ece1a9168..a189b345f9afc1613deb4dd9149728d18feed82a 100644
+--- a/src/main/java/com/destroystokyo/paper/event/block/BlockDestroyEvent.java
++++ b/src/main/java/com/destroystokyo/paper/event/block/BlockDestroyEvent.java
+@@ -2,12 +2,15 @@ package com.destroystokyo.paper.event.block;
+ 
+ import org.bukkit.block.Block;
+ import org.bukkit.block.data.BlockData;
++import org.bukkit.entity.Item;
+ import org.bukkit.event.Cancellable;
+ import org.bukkit.event.HandlerList;
+ import org.bukkit.event.block.BlockExpEvent;
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.NotNull;
+ 
++import java.util.List;
++
+ /**
+  * Fired anytime the server intends to 'destroy' a block through some triggering reason.
+  * This does not fire anytime a block is set to air, but only with more direct triggers such
+@@ -26,15 +29,17 @@ public class BlockDestroyEvent extends BlockExpEvent implements Cancellable {
+     private boolean willDrop;
+     private boolean playEffect = true;
+     private BlockData effectBlock;
+-
++    private final List<Item> items;
++    
+     private boolean cancelled;
+ 
+     @ApiStatus.Internal
+-    public BlockDestroyEvent(@NotNull Block block, @NotNull BlockData newState, @NotNull BlockData effectBlock, int xp, boolean willDrop) {
++    public BlockDestroyEvent(@NotNull Block block, @NotNull BlockData newState, @NotNull BlockData effectBlock, int xp, boolean willDrop, @NotNull List<Item> items) {
+         super(block, xp);
+         this.newState = newState;
+         this.effectBlock = effectBlock;
+         this.willDrop = willDrop;
++        this.items = items;
+     }
+ 
+     /**
+@@ -108,6 +113,12 @@ public class BlockDestroyEvent extends BlockExpEvent implements Cancellable {
+     public void setCancelled(boolean cancel) {
+         this.cancelled = cancel;
+     }
++    
++    @NotNull
++    public List<Item> getItems()
++    {
++        return items;
++    }
+ 
+     @NotNull
+     @Override
