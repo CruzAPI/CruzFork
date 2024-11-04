@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Mon, 2 Sep 2024 20:32:53 -0300
+Subject: [PATCH] Add tool to BlockBreakNaturallyEvent
+
+
+diff --git a/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java b/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
+index 68d52dac361f929f715eec0c054757bef65f915d..23c2d4688eaca32f035ccdd0cfd91b31551c2795 100644
+--- a/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
++++ b/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
+@@ -5,8 +5,10 @@ import org.bukkit.entity.Item;
+ import org.bukkit.event.Cancellable;
+ import org.bukkit.event.HandlerList;
+ import org.bukkit.event.block.BlockExpEvent;
++import org.bukkit.inventory.ItemStack;
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.NotNull;
++import org.jetbrains.annotations.Nullable;
+ 
+ import java.util.List;
+ 
+@@ -19,20 +21,34 @@ public class BlockBreakNaturallyEvent extends BlockExpEvent implements Cancellab
+     private boolean triggerEffect;
+     private boolean dropExperience;
+     private boolean cancelled;
++    private @Nullable ItemStack tool;
+     
+     @ApiStatus.Internal
+     public BlockBreakNaturallyEvent(@NotNull Block block,
+         int xp,
+         boolean triggerEffect,
+         boolean dropExperience,
++        @Nullable ItemStack tool,
+         @NotNull List<Item> items)
+     {
+         super(block, xp);
++        this.tool = tool;
+         this.items = items;
+         this.triggerEffect = triggerEffect;
+         this.dropExperience = dropExperience;
+     }
+     
++    @Nullable
++    public ItemStack getTool()
++    {
++        return tool;
++    }
++    
++    public void setTool(@Nullable ItemStack tool)
++    {
++        this.tool = tool;
++    }
++    
+     /**
+      * @return If the event is cancelled, meaning the block will not be destroyed
+      */

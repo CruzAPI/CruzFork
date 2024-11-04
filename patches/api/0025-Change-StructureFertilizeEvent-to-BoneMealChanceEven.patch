@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 4 Oct 2024 22:06:06 -0300
+Subject: [PATCH] Change StructureFertilizeEvent to BoneMealChanceEvent
+
+
+diff --git a/src/main/java/com/eul4/event/block/StructureFertilizeEvent.java b/src/main/java/com/eul4/event/block/BoneMealChanceEvent.java
+similarity index 71%
+rename from src/main/java/com/eul4/event/block/StructureFertilizeEvent.java
+rename to src/main/java/com/eul4/event/block/BoneMealChanceEvent.java
+index d5442f1a2e348bee0be75d7e6a2180c34f2c45bf..22c30ceabe329cd2bb97572b2785df995d667ec1 100644
+--- a/src/main/java/com/eul4/event/block/StructureFertilizeEvent.java
++++ b/src/main/java/com/eul4/event/block/BoneMealChanceEvent.java
+@@ -1,14 +1,13 @@
+ package com.eul4.event.block;
+ 
+ import org.bukkit.block.Block;
+-import org.bukkit.event.Cancellable;
+ import org.bukkit.event.HandlerList;
+ import org.bukkit.event.block.BlockEvent;
+ import org.bukkit.inventory.ItemStack;
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.NotNull;
+ 
+-public class StructureFertilizeEvent extends BlockEvent implements Cancellable
++public class BoneMealChanceEvent extends BlockEvent
+ {
+     private static final HandlerList handlers = new HandlerList();
+    
+@@ -18,7 +17,7 @@ public class StructureFertilizeEvent extends BlockEvent implements Cancellable
+     private boolean cancelled;
+     
+     @ApiStatus.Internal
+-    public StructureFertilizeEvent(@NotNull Block theBlock, float chance, ItemStack boneMeal)
++    public BoneMealChanceEvent(@NotNull Block theBlock, float chance, ItemStack boneMeal)
+     {
+         super(theBlock);
+         this.boneMeal = boneMeal;
+@@ -40,18 +39,6 @@ public class StructureFertilizeEvent extends BlockEvent implements Cancellable
+         this.chance = chance;
+     }
+     
+-    @Override
+-    public boolean isCancelled()
+-    {
+-        return cancelled;
+-    }
+-
+-    @Override
+-    public void setCancelled(boolean cancelled)
+-    {
+-        this.cancelled = cancelled;
+-    }
+-
+     @NotNull
+     @Override
+     public HandlerList getHandlers()

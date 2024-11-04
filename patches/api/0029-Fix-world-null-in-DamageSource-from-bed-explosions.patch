@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Thu, 10 Oct 2024 20:31:19 -0300
+Subject: [PATCH] Fix world null in DamageSource from bed explosions
+
+
+diff --git a/src/main/java/org/bukkit/damage/DamageSource.java b/src/main/java/org/bukkit/damage/DamageSource.java
+index 08c7ac3b06db4f9cf479098b33358d36afede185..116624f2f7741266417b9547e17659c021727da4 100644
+--- a/src/main/java/org/bukkit/damage/DamageSource.java
++++ b/src/main/java/org/bukkit/damage/DamageSource.java
+@@ -2,6 +2,7 @@ package org.bukkit.damage;
+ 
+ import org.bukkit.Bukkit;
+ import org.bukkit.Location;
++import org.bukkit.World;
+ import org.bukkit.block.Block;
+ import org.bukkit.entity.Entity;
+ import org.bukkit.inventory.ItemStack;
+@@ -56,7 +57,10 @@ public interface DamageSource {
+      */
+     @Nullable
+     public Location getDamageLocation();
+-
++    
++    @Nullable
++    World getWorld();
++    
+     /**
+      * Get the {@link Location} from where the damage originated.
+      * <p>

@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 30 Aug 2024 10:25:35 -0300
+Subject: [PATCH] Remove force flag in LivingEntity#damageItemStack
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+index beb6ad312028adb14053e3f019a4fcf6c9149373..8afce929c8276caaf3a8ba9b04f233707d96d001 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftLivingEntity.java
+@@ -1124,11 +1124,14 @@ public class CraftLivingEntity extends CraftEntity implements LivingEntity {
+     @Override
+     public void damageItemStack(final org.bukkit.inventory.EquipmentSlot slot, final int amount) {
+         final net.minecraft.world.entity.EquipmentSlot nmsSlot = org.bukkit.craftbukkit.CraftEquipmentSlot.getNMS(slot);
+-        this.damageItemStack0(this.getHandle().getItemBySlot(nmsSlot), amount, nmsSlot);
++        this.damageItemStack0(this.getHandle().getItemBySlot(nmsSlot), amount, nmsSlot, false);
+     }
+ 
+     private void damageItemStack0(final net.minecraft.world.item.ItemStack nmsStack, final int amount, final net.minecraft.world.entity.EquipmentSlot slot) {
+-        nmsStack.hurtAndBreak(amount, this.getHandle(), slot, true);
++        damageItemStack0(nmsStack, amount, slot, true);
++    }
++    private void damageItemStack0(final net.minecraft.world.item.ItemStack nmsStack, final int amount, final net.minecraft.world.entity.EquipmentSlot slot, boolean force) {
++        nmsStack.hurtAndBreak(amount, this.getHandle(), slot, force);
+     }
+     // Paper end - ItemStack damage API
+     // Paper start - friction API

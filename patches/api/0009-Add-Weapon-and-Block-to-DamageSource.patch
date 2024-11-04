@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 30 Aug 2024 15:53:54 -0300
+Subject: [PATCH] Add Weapon and Block to DamageSource
+
+
+diff --git a/src/main/java/org/bukkit/damage/DamageSource.java b/src/main/java/org/bukkit/damage/DamageSource.java
+index 7635610e56c051ce3c8a876911ba5cd0a9248496..08c7ac3b06db4f9cf479098b33358d36afede185 100644
+--- a/src/main/java/org/bukkit/damage/DamageSource.java
++++ b/src/main/java/org/bukkit/damage/DamageSource.java
+@@ -2,7 +2,9 @@ package org.bukkit.damage;
+ 
+ import org.bukkit.Bukkit;
+ import org.bukkit.Location;
++import org.bukkit.block.Block;
+ import org.bukkit.entity.Entity;
++import org.bukkit.inventory.ItemStack;
+ import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+@@ -106,7 +108,13 @@ public interface DamageSource {
+     public static Builder builder(@NotNull DamageType damageType) {
+         return Bukkit.getUnsafe().createDamageSourceBuilder(damageType);
+     }
+-
++    
++    @Nullable
++    ItemStack getWeaponItem();
++    
++    @Nullable
++    Block getDirectBlock();
++    
+     /**
+      * Utility class to make building a {@link DamageSource} easier. Only a
+      * {@link DamageType} is required.

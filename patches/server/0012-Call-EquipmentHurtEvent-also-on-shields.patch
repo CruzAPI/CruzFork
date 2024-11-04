@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 30 Aug 2024 16:18:58 -0300
+Subject: [PATCH] Call EquipmentHurtEvent also on shields
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index d26d55bf82d86cbdc1d5c042ac8adb4ba0c2a986..8d0f29c052ee81aed29ff516e76aa781aefdce16 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -1431,7 +1431,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+ 
+             // CraftBukkit - Moved into handleEntityDamage(DamageSource, float) for get f and actuallyHurt(DamageSource, float, EntityDamageEvent) for handle damage
+             if (false && amount > 0.0F && this.isDamageSourceBlocked(source)) {
+-                this.hurtCurrentlyUsedShield(amount);
++                this.hurtCurrentlyUsedShield(source, amount);
+                 f2 = amount;
+                 amount = 0.0F;
+                 if (!source.is(DamageTypeTags.IS_PROJECTILE)) {
+@@ -2169,7 +2169,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+ 
+     protected void hurtHelmet(DamageSource source, float amount) {}
+ 
+-    protected void hurtCurrentlyUsedShield(float amount) {}
++    protected void hurtCurrentlyUsedShield(DamageSource source, float amount) {}
+ 
+     protected void doHurtEquipment(DamageSource source, float amount, EquipmentSlot... slots) {
+         if (amount > 0.0F) {
+@@ -2372,7 +2372,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+ 
+             // Apply blocking code // PAIL: steal from above
+             if (event.getDamage(DamageModifier.BLOCKING) < 0) {
+-                this.hurtCurrentlyUsedShield((float) -event.getDamage(DamageModifier.BLOCKING));
++                this.hurtCurrentlyUsedShield(damagesource, (float) -event.getDamage(DamageModifier.BLOCKING));
+                 Entity entity = damagesource.getDirectEntity();
+ 
+                 if (!damagesource.is(DamageTypeTags.IS_PROJECTILE) && entity instanceof LivingEntity && entity.distanceToSqr(this) <= (200.0D * 200.0D)) { // Paper - Fix shield disable inconsistency & Check distance in entity interactions
+diff --git a/src/main/java/net/minecraft/world/entity/player/Player.java b/src/main/java/net/minecraft/world/entity/player/Player.java
+index 09bcbc0ae36e4e69fee87a7e0c49acf496117a39..6d1939f7ec11941eaa14e767f5a2ef1388c51b1d 100644
+--- a/src/main/java/net/minecraft/world/entity/player/Player.java
++++ b/src/main/java/net/minecraft/world/entity/player/Player.java
+@@ -1060,7 +1060,7 @@ public abstract class Player extends LivingEntity {
+     }
+ 
+     @Override
+-    protected void hurtCurrentlyUsedShield(float amount) {
++    protected void hurtCurrentlyUsedShield(DamageSource source, float amount) {
+         if (this.useItem.is(Items.SHIELD)) {
+             if (!this.level().isClientSide) {
+                 this.awardStat(Stats.ITEM_USED.get(this.useItem.getItem()));
+@@ -1070,7 +1070,7 @@ public abstract class Player extends LivingEntity {
+                 int i = 1 + Mth.floor(amount);
+                 InteractionHand enumhand = this.getUsedItemHand();
+ 
+-                this.useItem.hurtAndBreak(i, this, getSlotForHand(enumhand));
++                this.useItem.hurtAndBreak(i, source, this, getSlotForHand(enumhand));
+                 if (this.useItem.isEmpty()) {
+                     if (enumhand == InteractionHand.MAIN_HAND) {
+                         this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);

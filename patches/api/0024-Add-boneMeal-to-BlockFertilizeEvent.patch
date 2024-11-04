@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 4 Oct 2024 18:31:54 -0300
+Subject: [PATCH] Add boneMeal to BlockFertilizeEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/block/BlockFertilizeEvent.java b/src/main/java/org/bukkit/event/block/BlockFertilizeEvent.java
+index 695309b4b7ef269ba2496408a5f874f61cd6c445..e2f984609bd7f69c76e0c66c0bae0b134c67f981 100644
+--- a/src/main/java/org/bukkit/event/block/BlockFertilizeEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockFertilizeEvent.java
+@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
+ import org.bukkit.event.Cancellable;
+ import org.bukkit.event.HandlerList;
+ import org.bukkit.event.world.StructureGrowEvent;
++import org.bukkit.inventory.ItemStack;
+ import org.jetbrains.annotations.NotNull;
+ import org.jetbrains.annotations.Nullable;
+ 
+@@ -22,13 +23,21 @@ public class BlockFertilizeEvent extends BlockEvent implements Cancellable {
+     //
+     private final Player player;
+     private final List<BlockState> blocks;
+-
+-    public BlockFertilizeEvent(@NotNull Block theBlock, @Nullable Player player, @NotNull List<BlockState> blocks) {
++    private final ItemStack boneMeal;
++    
++    public BlockFertilizeEvent(@NotNull Block theBlock, @NotNull ItemStack boneMeal, @Nullable Player player, @NotNull List<BlockState> blocks) {
+         super(theBlock);
++        this.boneMeal = boneMeal;
+         this.player = player;
+         this.blocks = blocks;
+     }
+-
++    
++    @NotNull
++    public ItemStack getBoneMeal()
++    {
++        return boneMeal.clone();
++    }
++    
+     /**
+      * Gets the player that triggered the fertilization.
+      *

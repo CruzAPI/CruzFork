@@ -1,0 +1,104 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Tue, 3 Sep 2024 20:32:34 -0300
+Subject: [PATCH] Add GeneratedStructure to AsyncStructureGenerateEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/levelgen/structure/StructureStart.java b/src/main/java/net/minecraft/world/level/levelgen/structure/StructureStart.java
+index ff917b9c8893ba9ae5ddf175914c029c23416846..ee64019306f7fd7403a4fdc4ff0666a32c858336 100644
+--- a/src/main/java/net/minecraft/world/level/levelgen/structure/StructureStart.java
++++ b/src/main/java/net/minecraft/world/level/levelgen/structure/StructureStart.java
+@@ -1,9 +1,6 @@
+ package net.minecraft.world.level.levelgen.structure;
+ 
+ import com.mojang.logging.LogUtils;
+-import java.util.Iterator;
+-import java.util.List;
+-import javax.annotation.Nullable;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Registry;
+ import net.minecraft.core.registries.Registries;
+@@ -20,6 +17,9 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSeriali
+ import net.minecraft.world.level.levelgen.structure.structures.OceanMonumentStructure;
+ import org.slf4j.Logger;
+ 
++import javax.annotation.Nullable;
++import java.util.List;
++
+ public final class StructureStart {
+ 
+     public static final String INVALID_START_ID = "INVALID";
+@@ -29,6 +29,7 @@ public final class StructureStart {
+     private final PiecesContainer pieceContainer;
+     private final ChunkPos chunkPos;
+     private int references;
++    
+     @Nullable
+     private volatile BoundingBox cachedBoundingBox;
+ 
+@@ -114,7 +115,7 @@ public final class StructureStart {
+             if (!pieces.isEmpty()) {
+                 org.bukkit.craftbukkit.util.TransformerGeneratorAccess transformerAccess = new org.bukkit.craftbukkit.util.TransformerGeneratorAccess();
+                 transformerAccess.setHandle(world);
+-                transformerAccess.setStructureTransformer(new org.bukkit.craftbukkit.util.CraftStructureTransformer(this.generationEventCause, world, structureAccessor, this.structure, chunkBox, chunkPos, pieces));
++                transformerAccess.setStructureTransformer(new org.bukkit.craftbukkit.util.CraftStructureTransformer(this.generationEventCause, world, structureAccessor, this.structure, chunkBox, chunkPos, pieces, this));
+                 for (StructurePiece piece : pieces) {
+                     piece.postProcess(transformerAccess, structureAccessor, chunkGenerator, random, chunkBox, chunkPos, blockposition1);
+                 }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftStructureTransformer.java b/src/main/java/org/bukkit/craftbukkit/util/CraftStructureTransformer.java
+index 0f1a7755cdd5e51ce3de9b0fd76a6f4c77d080cc..d727e04ee3d79b21a7eefaf0515aa303c5b289d7 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftStructureTransformer.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftStructureTransformer.java
+@@ -1,8 +1,5 @@
+ package org.bukkit.craftbukkit.util;
+ 
+-import java.util.Collection;
+-import java.util.List;
+-import java.util.Objects;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.level.ChunkPos;
+@@ -11,11 +8,13 @@ import net.minecraft.world.level.WorldGenLevel;
+ import net.minecraft.world.level.levelgen.structure.BoundingBox;
+ import net.minecraft.world.level.levelgen.structure.Structure;
+ import net.minecraft.world.level.levelgen.structure.StructurePiece;
++import net.minecraft.world.level.levelgen.structure.StructureStart;
+ import org.bukkit.Bukkit;
+ import org.bukkit.block.BlockState;
+ import org.bukkit.craftbukkit.block.CraftBlockState;
+ import org.bukkit.craftbukkit.entity.CraftEntity;
+ import org.bukkit.craftbukkit.generator.CraftLimitedRegion;
++import org.bukkit.craftbukkit.generator.structure.CraftGeneratedStructure;
+ import org.bukkit.craftbukkit.generator.structure.CraftStructure;
+ import org.bukkit.event.world.AsyncStructureGenerateEvent;
+ import org.bukkit.event.world.AsyncStructureGenerateEvent.Cause;
+@@ -23,6 +22,10 @@ import org.bukkit.util.BlockTransformer;
+ import org.bukkit.util.BlockTransformer.TransformationState;
+ import org.bukkit.util.EntityTransformer;
+ 
++import java.util.Collection;
++import java.util.List;
++import java.util.Objects;
++
+ public class CraftStructureTransformer {
+ 
+     private static class CraftTransformationState implements TransformationState {
+@@ -65,7 +68,7 @@ public class CraftStructureTransformer {
+     private BlockTransformer[] blockTransformers;
+     private EntityTransformer[] entityTransformers;
+ 
+-    public CraftStructureTransformer(Cause cause, WorldGenLevel generatoraccessseed, StructureManager structuremanager, Structure structure, BoundingBox structureboundingbox, ChunkPos chunkcoordintpair, List<StructurePiece> pieces) {
++    public CraftStructureTransformer(Cause cause, WorldGenLevel generatoraccessseed, StructureManager structuremanager, Structure structure, BoundingBox structureboundingbox, ChunkPos chunkcoordintpair, List<StructurePiece> pieces, StructureStart structureStart) {
+         AsyncStructureGenerateEvent event = new AsyncStructureGenerateEvent
+         (
+             structuremanager.level.getMinecraftWorld().getWorld(),
+@@ -86,7 +89,8 @@ public class CraftStructureTransformer {
+             pieces.stream()
+                 .map(StructurePiece::getBoundingBox)
+                 .map(bb -> new org.bukkit.util.BoundingBox(bb.minX(), bb.minY(), bb.minZ(), bb.maxX(), bb.maxY(), bb.maxZ()))
+-                .toList()
++                .toList(),
++            new CraftGeneratedStructure(structureStart)
+         );
+         Bukkit.getPluginManager().callEvent(event);
+         this.blockTransformers = event.getBlockTransformers().values().toArray(BlockTransformer[]::new);

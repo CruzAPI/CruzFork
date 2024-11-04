@@ -1,0 +1,98 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 30 Aug 2024 12:52:22 -0300
+Subject: [PATCH] Add EquipmentHurtEvent
+
+
+diff --git a/src/main/java/com/eul4/event/entity/EquipmentHurtEvent.java b/src/main/java/com/eul4/event/entity/EquipmentHurtEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1962071013662141432b5c61777c6b3ddef3778a
+--- /dev/null
++++ b/src/main/java/com/eul4/event/entity/EquipmentHurtEvent.java
+@@ -0,0 +1,86 @@
++package com.eul4.event.entity;
++
++import org.bukkit.damage.DamageSource;
++import org.bukkit.entity.LivingEntity;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.entity.EntityEvent;
++import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.NotNull;
++
++public class EquipmentHurtEvent extends EntityEvent implements Cancellable
++{
++    private static final HandlerList HANDLER_LIST = new HandlerList();
++    
++    private final int originalAmount;
++    private int amount;
++    
++    private final ItemStack item;
++    private final DamageSource damageSource;
++    private boolean cancelled;
++    
++    public EquipmentHurtEvent
++    (
++        @NotNull LivingEntity entity,
++        int amount,
++        ItemStack item,
++        DamageSource damageSource
++    )
++    {
++        super(entity);
++        this.originalAmount = amount;
++        this.amount = amount;
++        this.item = item;
++        this.damageSource = damageSource;
++    }
++    
++    public ItemStack getItem()
++    {
++        return item.clone();
++    }
++    
++    public int getOriginalAmount()
++    {
++        return originalAmount;
++    }
++    
++    public int getAmount()
++    {
++        return amount;
++    }
++    
++    public void setAmount(int amount)
++    {
++        this.amount = amount;
++    }
++    
++    public DamageSource getDamageSource()
++    {
++        return damageSource;
++    }
++    
++    @Override
++    public boolean isCancelled()
++    {
++        return cancelled;
++    }
++    
++    @Override
++    public void setCancelled(boolean cancelled)
++    {
++        this.cancelled = cancelled;
++    }
++    
++    @NotNull
++    @Override
++    public HandlerList getHandlers()
++    {
++        return HANDLER_LIST;
++    }
++    
++    @NotNull
++    public static HandlerList getHandlerList()
++    {
++        return HANDLER_LIST;
++    }
++}

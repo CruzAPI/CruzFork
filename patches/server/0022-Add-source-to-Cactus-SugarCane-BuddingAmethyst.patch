@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Thu, 3 Oct 2024 10:59:52 -0300
+Subject: [PATCH] Add source to Cactus/SugarCane/BuddingAmethyst
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/BuddingAmethystBlock.java b/src/main/java/net/minecraft/world/level/block/BuddingAmethystBlock.java
+index 8920855b07a31715327b8102c7faafc9f916825d..8a970d3441d0dbd483b6ce02f82c50518a8737bb 100644
+--- a/src/main/java/net/minecraft/world/level/block/BuddingAmethystBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/BuddingAmethystBlock.java
+@@ -46,9 +46,12 @@ public class BuddingAmethystBlock extends AmethystBlock {
+                 BlockState iblockdata2 = (BlockState) ((BlockState) block.defaultBlockState().setValue(AmethystClusterBlock.FACING, enumdirection)).setValue(AmethystClusterBlock.WATERLOGGED, iblockdata1.getFluidState().getType() == Fluids.WATER);
+ 
+                 // Paper start - Have Amethyst throw both spread and grow events
+-                if (block == Blocks.SMALL_AMETHYST_BUD) {
+-                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(world, pos, blockposition1, iblockdata2); // CraftBukkit
+-                } else {
++                if (block == Blocks.SMALL_AMETHYST_BUD)
++                {
++                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(world, blockposition1, pos, iblockdata2);
++                }
++                else
++                {
+                     org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(world, blockposition1, iblockdata2);
+                 }
+                 // Paper end - Have Amethyst throw both spread and grow events
+diff --git a/src/main/java/net/minecraft/world/level/block/CactusBlock.java b/src/main/java/net/minecraft/world/level/block/CactusBlock.java
+index ff4dda48116a2969704b355ff96407ba869b466e..e8296980c57b20b2f55f0c1b74397ba89b67f6bf 100644
+--- a/src/main/java/net/minecraft/world/level/block/CactusBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/CactusBlock.java
+@@ -66,7 +66,7 @@ public class CactusBlock extends Block {
+ 
+                 int modifier = world.spigotConfig.cactusModifier; // Spigot - SPIGOT-7159: Better modifier resolution
+                 if (j >= 15 || (modifier != 100 && random.nextFloat() < (modifier / (100.0f * 16)))) { // Spigot - SPIGOT-7159: Better modifier resolution
+-                    CraftEventFactory.handleBlockGrowEvent(world, blockposition1, this.defaultBlockState()); // CraftBukkit
++                    CraftEventFactory.handleBlockGrowEvent(world, blockposition1, pos, this.defaultBlockState()); // CraftBukkit
+                     BlockState iblockdata1 = (BlockState) state.setValue(CactusBlock.AGE, 0);
+ 
+                     world.setBlock(pos, iblockdata1, 4);
+diff --git a/src/main/java/net/minecraft/world/level/block/SugarCaneBlock.java b/src/main/java/net/minecraft/world/level/block/SugarCaneBlock.java
+index c48c622e92cedeaa46b929c7adfedec98dd5a3fb..1784895a87d501f4489d415eb81ba6708620dbe1 100644
+--- a/src/main/java/net/minecraft/world/level/block/SugarCaneBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/SugarCaneBlock.java
+@@ -64,7 +64,7 @@ public class SugarCaneBlock extends Block {
+ 
+                 int modifier = world.spigotConfig.caneModifier; // Spigot - SPIGOT-7159: Better modifier resolution
+                 if (j >= 15 || (modifier != 100 && random.nextFloat() < (modifier / (100.0f * 16)))) { // Spigot - SPIGOT-7159: Better modifier resolution
+-                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(world, pos.above(), this.defaultBlockState()); // CraftBukkit
++                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(world, pos.above(), pos, this.defaultBlockState()); // CraftBukkit
+                     world.setBlock(pos, (BlockState) state.setValue(SugarCaneBlock.AGE, 0), 4);
+                 } else if (modifier == 100 || random.nextFloat() < (modifier / (100.0f * 16))) { // Spigot - SPIGOT-7159: Better modifier resolution
+                     world.setBlock(pos, (BlockState) state.setValue(SugarCaneBlock.AGE, j + 1), 4);

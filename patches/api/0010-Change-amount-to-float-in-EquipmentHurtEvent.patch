@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Sat, 31 Aug 2024 14:46:29 -0300
+Subject: [PATCH] Change amount to float in EquipmentHurtEvent
+
+
+diff --git a/src/main/java/com/eul4/event/entity/EquipmentHurtEvent.java b/src/main/java/com/eul4/event/entity/EquipmentHurtEvent.java
+index 1962071013662141432b5c61777c6b3ddef3778a..a51c6e90ec28afb2df7d83ca579d5e8cdb1e121c 100644
+--- a/src/main/java/com/eul4/event/entity/EquipmentHurtEvent.java
++++ b/src/main/java/com/eul4/event/entity/EquipmentHurtEvent.java
+@@ -12,8 +12,8 @@ public class EquipmentHurtEvent extends EntityEvent implements Cancellable
+ {
+     private static final HandlerList HANDLER_LIST = new HandlerList();
+     
+-    private final int originalAmount;
+-    private int amount;
++    private final float originalAmount;
++    private float amount;
+     
+     private final ItemStack item;
+     private final DamageSource damageSource;
+@@ -22,7 +22,7 @@ public class EquipmentHurtEvent extends EntityEvent implements Cancellable
+     public EquipmentHurtEvent
+     (
+         @NotNull LivingEntity entity,
+-        int amount,
++        float amount,
+         ItemStack item,
+         DamageSource damageSource
+     )
+@@ -39,17 +39,17 @@ public class EquipmentHurtEvent extends EntityEvent implements Cancellable
+         return item.clone();
+     }
+     
+-    public int getOriginalAmount()
++    public float getOriginalAmount()
+     {
+         return originalAmount;
+     }
+     
+-    public int getAmount()
++    public float getAmount()
+     {
+         return amount;
+     }
+     
+-    public void setAmount(int amount)
++    public void setAmount(float amount)
+     {
+         this.amount = amount;
+     }

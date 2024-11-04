@@ -1,0 +1,77 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Mon, 30 Sep 2024 10:27:10 -0300
+Subject: [PATCH] Adapt SaplingBoneMealEvent to mushrooms ->
+ StructureFertilizeEvent
+
+
+diff --git a/src/main/java/com/eul4/event/block/SaplingBoneMealEvent.java b/src/main/java/com/eul4/event/block/StructureFertilizeEvent.java
+similarity index 83%
+rename from src/main/java/com/eul4/event/block/SaplingBoneMealEvent.java
+rename to src/main/java/com/eul4/event/block/StructureFertilizeEvent.java
+index 952330b35a4372622bfe08c1e8791033ada7eca7..d5442f1a2e348bee0be75d7e6a2180c34f2c45bf 100644
+--- a/src/main/java/com/eul4/event/block/SaplingBoneMealEvent.java
++++ b/src/main/java/com/eul4/event/block/StructureFertilizeEvent.java
+@@ -5,9 +5,10 @@ import org.bukkit.event.Cancellable;
+ import org.bukkit.event.HandlerList;
+ import org.bukkit.event.block.BlockEvent;
+ import org.bukkit.inventory.ItemStack;
++import org.jetbrains.annotations.ApiStatus;
+ import org.jetbrains.annotations.NotNull;
+ 
+-public class SaplingBoneMealEvent extends BlockEvent implements Cancellable
++public class StructureFertilizeEvent extends BlockEvent implements Cancellable
+ {
+     private static final HandlerList handlers = new HandlerList();
+    
+@@ -16,7 +17,8 @@ public class SaplingBoneMealEvent extends BlockEvent implements Cancellable
+    
+     private boolean cancelled;
+     
+-    public SaplingBoneMealEvent(@NotNull Block theBlock, float chance, ItemStack boneMeal)
++    @ApiStatus.Internal
++    public StructureFertilizeEvent(@NotNull Block theBlock, float chance, ItemStack boneMeal)
+     {
+         super(theBlock);
+         this.boneMeal = boneMeal;
+diff --git a/src/main/java/org/bukkit/event/world/StructureAgeEvent.java b/src/main/java/org/bukkit/event/world/StructureAgeEvent.java
+index 0d11ab3b28acf66d508193a00368e49c0f0f5caa..07076383f66d6470a4027b8939360621da24fdd0 100644
+--- a/src/main/java/org/bukkit/event/world/StructureAgeEvent.java
++++ b/src/main/java/org/bukkit/event/world/StructureAgeEvent.java
+@@ -18,17 +18,15 @@ public class StructureAgeEvent extends WorldEvent implements Cancellable
+     private final Location location;
+     private final TreeType species;
+     private final boolean bonemeal;
+-    private final Player player;
+ 
+     private boolean cancelled;
+     
+-    public StructureAgeEvent(@NotNull final Location location, @NotNull final TreeType species, final boolean bonemeal, @Nullable final Player player)
++    public StructureAgeEvent(@NotNull final Location location, @NotNull final TreeType species, final boolean bonemeal)
+     {
+         super(location.getWorld());
+         this.location = location;
+         this.species = species;
+         this.bonemeal = bonemeal;
+-        this.player = player;
+     }
+ 
+     /**
+@@ -61,17 +59,6 @@ public class StructureAgeEvent extends WorldEvent implements Cancellable
+         return bonemeal;
+     }
+ 
+-    /**
+-     * Gets the player that created the structure.
+-     *
+-     * @return Player that created the structure, null if was not created
+-     *     manually
+-     */
+-    @Nullable
+-    public Player getPlayer() {
+-        return player;
+-    }
+-
+     @Override
+     public boolean isCancelled() {
+         return cancelled;

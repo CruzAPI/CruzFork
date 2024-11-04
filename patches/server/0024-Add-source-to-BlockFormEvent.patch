@@ -1,0 +1,105 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 4 Oct 2024 10:47:18 -0300
+Subject: [PATCH] Add source to BlockFormEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/LiquidBlock.java b/src/main/java/net/minecraft/world/level/block/LiquidBlock.java
+index 84623c632d8c2f0fa7ec939c711316d757117d23..a5895f40a274d24bcb1895f513bb80c2211620f2 100644
+--- a/src/main/java/net/minecraft/world/level/block/LiquidBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/LiquidBlock.java
+@@ -193,7 +193,7 @@ public class LiquidBlock extends Block implements BucketPickup {
+                     Block block = world.getFluidState(pos).isSource() ? Blocks.OBSIDIAN : Blocks.COBBLESTONE;
+ 
+                     // CraftBukkit start
+-                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, pos, block.defaultBlockState())) {
++                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, pos, blockposition1, block.defaultBlockState())) {
+                         this.fizz(world, pos);
+                     }
+                     // CraftBukkit end
+@@ -202,7 +202,7 @@ public class LiquidBlock extends Block implements BucketPickup {
+ 
+                 if (flag && world.getBlockState(blockposition1).is(Blocks.BLUE_ICE)) {
+                     // CraftBukkit start
+-                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, pos, Blocks.BASALT.defaultBlockState())) {
++                    if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, pos, blockposition1, Blocks.BASALT.defaultBlockState())) {
+                         this.fizz(world, pos);
+                     }
+                     // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/world/level/block/PointedDripstoneBlock.java b/src/main/java/net/minecraft/world/level/block/PointedDripstoneBlock.java
+index a2bd54dae4b0460d200f6d5300194a7ef5a28830..07f3d9fdefa134ff659037d2ebd1dfe2267afadf 100644
+--- a/src/main/java/net/minecraft/world/level/block/PointedDripstoneBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/PointedDripstoneBlock.java
+@@ -216,7 +216,7 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
+                                 BlockState iblockdata1 = Blocks.CLAY.defaultBlockState();
+ 
+                                 // Paper start - Call BlockFormEvent
+-                                if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, ((PointedDripstoneBlock.FluidInfo) optional.get()).pos, iblockdata1)) {
++                                if (org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world, ((PointedDripstoneBlock.FluidInfo) optional.get()).pos, blockposition1, iblockdata1)) {
+                                 Block.pushEntitiesUp(((PointedDripstoneBlock.FluidInfo) optional.get()).sourceState, iblockdata1, world, ((PointedDripstoneBlock.FluidInfo) optional.get()).pos);
+                                 world.gameEvent((Holder) GameEvent.BLOCK_CHANGE, ((PointedDripstoneBlock.FluidInfo) optional.get()).pos, GameEvent.Context.of(iblockdata1));
+                                 world.levelEvent(1504, blockposition1, 0);
+diff --git a/src/main/java/net/minecraft/world/level/material/LavaFluid.java b/src/main/java/net/minecraft/world/level/material/LavaFluid.java
+index 3bb4a9a1a6249e8ba2de237f801210e7f4fd5825..8be9089c687dff1128dde6770b950eae1fcff892 100644
+--- a/src/main/java/net/minecraft/world/level/material/LavaFluid.java
++++ b/src/main/java/net/minecraft/world/level/material/LavaFluid.java
+@@ -211,7 +211,7 @@ public abstract class LavaFluid extends FlowingFluid {
+             if (this.is(FluidTags.LAVA) && fluid1.is(FluidTags.WATER)) {
+                 if (state.getBlock() instanceof LiquidBlock) {
+                     // CraftBukkit start
+-                    if (!org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world.getMinecraftWorld(), pos, Blocks.STONE.defaultBlockState(), 3)) {
++                    if (!org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockFormEvent(world.getMinecraftWorld(), pos, pos.above(), Blocks.STONE.defaultBlockState(), 3)) {
+                         return;
+                     }
+                     // CraftBukkit end
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index cb5e5d5b3d5806031a5a1c50669fdf1c0d4a4cb7..28743a960ab6db4c211c8ee3b67c99fde1c6a2aa 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1969,6 +1969,11 @@ public class CraftEventFactory {
+     public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block) {
+         return CraftEventFactory.handleBlockFormEvent(world, pos, block, 3);
+     }
++    
++    public static boolean handleBlockFormEvent(Level world, BlockPos pos, BlockPos sorcePos, net.minecraft.world.level.block.state.BlockState block)
++    {
++        return CraftEventFactory.handleBlockFormEvent(world, pos, sorcePos, block, 3);
++    }
+ 
+     public static EntityPotionEffectEvent callEntityPotionEffectChangeEvent(net.minecraft.world.entity.LivingEntity entity, @Nullable MobEffectInstance oldEffect, @Nullable MobEffectInstance newEffect, EntityPotionEffectEvent.Cause cause) {
+         return CraftEventFactory.callEntityPotionEffectChangeEvent(entity, oldEffect, newEffect, cause, true);
+@@ -2004,16 +2009,32 @@ public class CraftEventFactory {
+     public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block, @Nullable Entity entity) {
+         return CraftEventFactory.handleBlockFormEvent(world, pos, block, 3, entity);
+     }
++    
++    public static boolean handleBlockFormEvent(Level world, BlockPos pos, BlockPos sourcePos, net.minecraft.world.level.block.state.BlockState block, @Nullable Entity entity)
++    {
++        return CraftEventFactory.handleBlockFormEvent(world, pos, sourcePos, block, 3, entity);
++    }
+ 
+     public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block, int flag) {
+         return CraftEventFactory.handleBlockFormEvent(world, pos, block, flag, null);
+     }
++    
++    public static boolean handleBlockFormEvent(Level world, BlockPos pos, BlockPos sourcePos, net.minecraft.world.level.block.state.BlockState block, int flag)
++    {
++        return CraftEventFactory.handleBlockFormEvent(world, pos, sourcePos, block, flag, null);
++    }
+ 
+-    public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block, int flag, @Nullable Entity entity) {
++    public static boolean handleBlockFormEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block, int flag, @Nullable Entity entity)
++    {
++        return CraftEventFactory.handleBlockFormEvent(world, pos, pos, block, flag, entity);
++    }
++    
++    public static boolean handleBlockFormEvent(Level world, BlockPos pos, BlockPos sourcePos, net.minecraft.world.level.block.state.BlockState block, int flag, @Nullable Entity entity) {
+         CraftBlockState blockState = CraftBlockStates.getBlockState(world, pos, flag);
+         blockState.setData(block);
++        CraftBlock sourceBlock = CraftBlock.at(world, sourcePos);
+ 
+-        BlockFormEvent event = (entity == null) ? new BlockFormEvent(blockState.getBlock(), blockState) : new EntityBlockFormEvent(entity.getBukkitEntity(), blockState.getBlock(), blockState);
++        BlockFormEvent event = (entity == null) ? new BlockFormEvent(blockState.getBlock(), sourceBlock, blockState) : new EntityBlockFormEvent(entity.getBukkitEntity(), blockState.getBlock(), blockState);
+         world.getCraftServer().getPluginManager().callEvent(event);
+ 
+         if (!event.isCancelled()) {

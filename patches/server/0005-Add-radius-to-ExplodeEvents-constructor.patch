@@ -18,7 +18,7 @@ index 5868d2e9e05a698c77117cf87c79b636b50fe289..490c6d687846bdd2ab5e925255657f67
              // This flag literally means 'Dragon hit something hard' (Obsidian, White Stone or Bedrock) and will cause the dragon to slow down.
              // We should consider adding an event extension for it, or perhaps returning true if the event is cancelled.
 diff --git a/src/main/java/net/minecraft/world/level/Explosion.java b/src/main/java/net/minecraft/world/level/Explosion.java
-index 6c66ee69beb55e5c5755bbf4d13c256541ce4468..1db0441ab5cb826871f31a9d314cd552e2a6c5ec 100644
+index ad57bf49476192dea6a7367cbd0ad3f11e142e1b..237bca4d9eea00d7ce42808cab79d10159fce92d 100644
 --- a/src/main/java/net/minecraft/world/level/Explosion.java
 +++ b/src/main/java/net/minecraft/world/level/Explosion.java
 @@ -667,14 +667,14 @@ public class Explosion {
@@ -39,10 +39,10 @@ index 6c66ee69beb55e5c5755bbf4d13c256541ce4468..1db0441ab5cb826871f31a9d314cd552
                  bukkitBlocks = event.blockList();
                  this.yield = event.getYield();
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index 0ab53d46f0b8f3f3791dd01766738522c86932e8..d8c4b7ead2de6ea6f91c03754b04c10bad033d59 100644
+index 77ef27f9254235180a8596c6c8c4af750dc759d1..5faa99589b645282c31652719875c751e56a84fb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -2088,14 +2088,14 @@ public class CraftEventFactory {
+@@ -2117,14 +2117,14 @@ public class CraftEventFactory {
          return !event.isCancelled();
      }
  

@@ -1,0 +1,127 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Thu, 29 Aug 2024 21:41:02 -0300
+Subject: [PATCH] Call EntityDamageItemOnHitEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/item/DiggerItem.java b/src/main/java/net/minecraft/world/item/DiggerItem.java
+index a17070e125862bdb948bd2d5dfbbbdf01528080e..fd7eb61c97a63b1aa3ce65c969b095edce3ac0d4 100644
+--- a/src/main/java/net/minecraft/world/item/DiggerItem.java
++++ b/src/main/java/net/minecraft/world/item/DiggerItem.java
+@@ -39,6 +39,6 @@ public class DiggerItem extends TieredItem {
+ 
+     @Override
+     public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+-        stack.hurtAndBreak(2, attacker, EquipmentSlot.MAINHAND);
++        stack.hurtAndBreakOnHit(2, target, attacker, EquipmentSlot.MAINHAND);
+     }
+ }
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index b6a2f3e4f22f36e75a1630bd456c2f471edbb398..2b83e174ff1448b835a953cd26fabff747896bd4 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.world.item;
+ 
++import com.eul4.event.entity.EntityDamageItemOnHitEvent;
+ import com.google.common.collect.Lists;
+ import com.mojang.logging.LogUtils;
+ import com.mojang.serialization.Codec;
+@@ -712,6 +713,18 @@ public final class ItemStack implements DataComponentHolder {
+         }
+     }
+ 
++    public void hurtAndBreakOnHit(int amount, LivingEntity target, LivingEntity entity, EquipmentSlot slot)
++    {
++        EntityDamageItemOnHitEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEntityDamageItemOnHitEvent(entity, target, amount, this);
++        
++        if(event.isCancelled())
++        {
++            return;
++        }
++        
++        hurtAndBreak(event.getAmount(), entity, slot);
++    }
++    
+     public void hurtAndBreak(int amount, LivingEntity entity, EquipmentSlot slot) {
+         // Paper start - add param to skip infinite mats check
+         this.hurtAndBreak(amount, entity, slot, false);
+diff --git a/src/main/java/net/minecraft/world/item/MaceItem.java b/src/main/java/net/minecraft/world/item/MaceItem.java
+index e07d6f5589f5eaa95d9009b1b0af71c879b2dddb..b7aa18045f0bc541834eb5b3dfe756e291f7087b 100644
+--- a/src/main/java/net/minecraft/world/item/MaceItem.java
++++ b/src/main/java/net/minecraft/world/item/MaceItem.java
+@@ -98,7 +98,7 @@ public class MaceItem extends Item {
+ 
+     @Override
+     public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+-        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
++        stack.hurtAndBreakOnHit(1, target, attacker, EquipmentSlot.MAINHAND);
+         if (canSmashAttack(attacker)) {
+             attacker.resetFallDistance();
+         }
+diff --git a/src/main/java/net/minecraft/world/item/SwordItem.java b/src/main/java/net/minecraft/world/item/SwordItem.java
+index e6ed895d9ef067f562f42dd28493c9f43ac90857..d1fcebaa00cbd2c480eafdd1c62a2841c73fcdc7 100644
+--- a/src/main/java/net/minecraft/world/item/SwordItem.java
++++ b/src/main/java/net/minecraft/world/item/SwordItem.java
+@@ -54,6 +54,6 @@ public class SwordItem extends TieredItem {
+ 
+     @Override
+     public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+-        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
++        stack.hurtAndBreakOnHit(1, target, attacker, EquipmentSlot.MAINHAND);
+     }
+ }
+diff --git a/src/main/java/net/minecraft/world/item/TridentItem.java b/src/main/java/net/minecraft/world/item/TridentItem.java
+index f1b2d388a1a40a1d909a2e726f32d6c15e1eb0eb..317f0748c0f5fcdd203dfd912e7af34bc6cc1e1e 100644
+--- a/src/main/java/net/minecraft/world/item/TridentItem.java
++++ b/src/main/java/net/minecraft/world/item/TridentItem.java
+@@ -169,7 +169,7 @@ public class TridentItem extends Item implements ProjectileItem {
+ 
+     @Override
+     public void postHurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+-        stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
++        stack.hurtAndBreakOnHit(1, target, attacker, EquipmentSlot.MAINHAND);
+     }
+ 
+     @Override
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 5faa99589b645282c31652719875c751e56a84fb..74f07f26e6561edcf75340b6c26268cf528d48e7 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1,5 +1,6 @@
+ package org.bukkit.craftbukkit.event;
+ 
++import com.eul4.event.entity.EntityDamageItemOnHitEvent;
+ import com.google.common.base.Function;
+ import com.google.common.base.Functions;
+ import com.google.common.base.Preconditions;
+@@ -1561,7 +1562,28 @@ public class CraftEventFactory {
+         PlayerItemBreakEvent event = new PlayerItemBreakEvent((Player) human.getBukkitEntity(), item);
+         Bukkit.getPluginManager().callEvent(event);
+     }
+-
++    
++    public static EntityDamageItemOnHitEvent callEntityDamageItemOnHitEvent
++    (
++        net.minecraft.world.entity.LivingEntity entity,
++        net.minecraft.world.entity.LivingEntity target,
++        int amount,
++        net.minecraft.world.item.ItemStack nmsStack
++    )
++    {
++        CraftItemStack item = CraftItemStack.asCraftMirror(nmsStack);
++        
++        EntityDamageItemOnHitEvent event = new EntityDamageItemOnHitEvent
++        (
++            (LivingEntity) entity.getBukkitEntity(),
++            (LivingEntity) target.getBukkitEntity(),
++            amount,
++            item
++        );
++        
++        Bukkit.getPluginManager().callEvent(event);
++        return event;
++    }
+     public static BlockIgniteEvent callBlockIgniteEvent(Level world, BlockPos block, BlockPos source) {
+         org.bukkit.World bukkitWorld = world.getWorld();
+         Block igniter = bukkitWorld.getBlockAt(source.getX(), source.getY(), source.getZ());

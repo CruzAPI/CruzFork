@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 4 Oct 2024 18:31:39 -0300
+Subject: [PATCH] Add boneMeal to BlockFetilizeEvent
+
+
+diff --git a/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java b/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java
+index 60d3319016beb4f60cbc26dde165f64cf7577602..1d1ee22027e49ab17ef98ffe647d4e5b2dc6a408 100644
+--- a/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java
++++ b/src/main/java/net/minecraft/core/dispenser/DispenseItemBehavior.java
+@@ -636,7 +636,7 @@ public interface DispenseItemBehavior {
+                         org.bukkit.Bukkit.getPluginManager().callEvent(structureEvent);
+                     }
+ 
+-                    BlockFertilizeEvent fertilizeEvent = new BlockFertilizeEvent(location.getBlock(), null, blocks);
++                    BlockFertilizeEvent fertilizeEvent = new BlockFertilizeEvent(location.getBlock(), CraftItemStack.asBukkitCopy(stack), null, blocks);
+                     fertilizeEvent.setCancelled(structureEvent != null && structureEvent.isCancelled());
+                     org.bukkit.Bukkit.getPluginManager().callEvent(fertilizeEvent);
+ 
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index 6040c2bd40b9736b565f61f1b373b6cf486b68ad..59dbd6603863022937df7c3401f33f8726a72c00 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -456,7 +456,7 @@ public final class ItemStack implements DataComponentHolder {
+                     org.bukkit.Bukkit.getPluginManager().callEvent(structureEvent);
+                 }
+ 
+-                BlockFertilizeEvent fertilizeEvent = new BlockFertilizeEvent(CraftBlock.at(world, blockposition), (Player) entityhuman.getBukkitEntity(), (List< BlockState>) (List<? extends BlockState>) blocks);
++                BlockFertilizeEvent fertilizeEvent = new BlockFertilizeEvent(CraftBlock.at(world, blockposition), CraftItemStack.asBukkitCopy(this), (Player) entityhuman.getBukkitEntity(), (List< BlockState>) (List<? extends BlockState>) blocks);
+                 fertilizeEvent.setCancelled(structureEvent != null && structureEvent.isCancelled());
+                 org.bukkit.Bukkit.getPluginManager().callEvent(fertilizeEvent);
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index acf884e4798ae720ed633157a0b3ab5627364a11..b5d34d305f1720f0db318cc2861c047b98dcbb95 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -609,7 +609,7 @@ public class CraftBlock implements Block {
+                 Bukkit.getPluginManager().callEvent(structureEvent);
+             }
+ 
+-            event = new BlockFertilizeEvent(CraftBlock.at(world, this.getPosition()), null, blocks);
++            event = new BlockFertilizeEvent(CraftBlock.at(world, this.getPosition()), CraftItemStack.asBukkitCopy(Items.BONE_MEAL.getDefaultInstance()), null, blocks);
+             event.setCancelled(structureEvent != null && structureEvent.isCancelled());
+             Bukkit.getPluginManager().callEvent(event);
+ 

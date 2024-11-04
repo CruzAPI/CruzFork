@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Wed, 2 Oct 2024 21:44:49 -0300
+Subject: [PATCH] Add source in BlockGrowEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/block/BlockGrowEvent.java b/src/main/java/org/bukkit/event/block/BlockGrowEvent.java
+index 73d5375d2f67ee00204d80308828cd9f2b2f17e8..3af7b3328aa4bed4596671b8113d0462a234c138 100644
+--- a/src/main/java/org/bukkit/event/block/BlockGrowEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockGrowEvent.java
+@@ -23,14 +23,33 @@ import org.jetbrains.annotations.NotNull;
+  */
+ public class BlockGrowEvent extends BlockEvent implements Cancellable {
+     private static final HandlerList handlers = new HandlerList();
++    private final Block source;
+     private final BlockState newState;
+     private boolean cancelled = false;
+ 
+-    public BlockGrowEvent(@NotNull final Block block, @NotNull final BlockState newState) {
++    public BlockGrowEvent(@NotNull final Block block, @NotNull final BlockState newState)
++    {
++        this(block, block, newState);
++    }
++    
++    public BlockGrowEvent(@NotNull final Block block, @NotNull final Block source, @NotNull final BlockState newState)
++    {
+         super(block);
++        this.source = source;
+         this.newState = newState;
+     }
+-
++    
++    @NotNull
++    /**
++     * Gets the source that growth the block or itself.
++     *
++     * @return The source block or the block itself if self growht.
++     */
++    public Block getSource()
++    {
++        return source;
++    }
++    
+     /**
+      * Gets the state of the block where it will form or spread to.
+      *

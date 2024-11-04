@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Sun, 6 Oct 2024 15:42:19 -0300
+Subject: [PATCH] Add fromBonemeal to BlockGrowEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/block/BlockFormEvent.java b/src/main/java/org/bukkit/event/block/BlockFormEvent.java
+index 3301725c22fc97d6417c08b1134011688d9c144c..4c56cfb2c6c2a21087652f1fc1a0f55f99ef2f80 100644
+--- a/src/main/java/org/bukkit/event/block/BlockFormEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockFormEvent.java
+@@ -32,7 +32,7 @@ public class BlockFormEvent extends BlockGrowEvent {
+     }
+     
+     public BlockFormEvent(@NotNull final Block block, @NotNull final Block source, @NotNull final BlockState newState) {
+-        super(block, source, newState);
++        super(block, source, newState, false);
+     }
+ 
+     @NotNull
+diff --git a/src/main/java/org/bukkit/event/block/BlockGrowEvent.java b/src/main/java/org/bukkit/event/block/BlockGrowEvent.java
+index 3af7b3328aa4bed4596671b8113d0462a234c138..1a89c976afe8c5e6ee50041f88cf7f03e8f8073c 100644
+--- a/src/main/java/org/bukkit/event/block/BlockGrowEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockGrowEvent.java
+@@ -26,17 +26,24 @@ public class BlockGrowEvent extends BlockEvent implements Cancellable {
+     private final Block source;
+     private final BlockState newState;
+     private boolean cancelled = false;
+-
++    private final boolean fromBonemeal;
++    
+     public BlockGrowEvent(@NotNull final Block block, @NotNull final BlockState newState)
+     {
+-        this(block, block, newState);
++        this(block, block, newState, false);
+     }
+     
+-    public BlockGrowEvent(@NotNull final Block block, @NotNull final Block source, @NotNull final BlockState newState)
++    public BlockGrowEvent(@NotNull final Block block, @NotNull final Block source, @NotNull final BlockState newState, boolean fromBonemeal)
+     {
+         super(block);
+         this.source = source;
+         this.newState = newState;
++        this.fromBonemeal = fromBonemeal;
++    }
++    
++    public boolean isFromBonemeal()
++    {
++        return fromBonemeal;
+     }
+     
+     @NotNull

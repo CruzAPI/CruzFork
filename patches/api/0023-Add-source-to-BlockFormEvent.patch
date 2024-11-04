@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 4 Oct 2024 10:47:28 -0300
+Subject: [PATCH] Add source to BlockFormEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/block/BlockFormEvent.java b/src/main/java/org/bukkit/event/block/BlockFormEvent.java
+index 0106780414abf8cdacd07b8e1435d619bf96bdb3..3301725c22fc97d6417c08b1134011688d9c144c 100644
+--- a/src/main/java/org/bukkit/event/block/BlockFormEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockFormEvent.java
+@@ -26,8 +26,13 @@ import org.jetbrains.annotations.NotNull;
+ public class BlockFormEvent extends BlockGrowEvent {
+     private static final HandlerList handlers = new HandlerList();
+ 
+-    public BlockFormEvent(@NotNull final Block block, @NotNull final BlockState newState) {
+-        super(block, newState);
++    public BlockFormEvent(@NotNull final Block block, @NotNull final BlockState newState)
++    {
++        this(block, block, newState);
++    }
++    
++    public BlockFormEvent(@NotNull final Block block, @NotNull final Block source, @NotNull final BlockState newState) {
++        super(block, source, newState);
+     }
+ 
+     @NotNull
+diff --git a/src/main/java/org/bukkit/event/block/BlockSpreadEvent.java b/src/main/java/org/bukkit/event/block/BlockSpreadEvent.java
+index e9239caec9d20985479f090bff15c7f2ec90c8cd..83e0a026db442afa78171c0c8e72d82466036d38 100644
+--- a/src/main/java/org/bukkit/event/block/BlockSpreadEvent.java
++++ b/src/main/java/org/bukkit/event/block/BlockSpreadEvent.java
+@@ -26,7 +26,7 @@ public class BlockSpreadEvent extends BlockFormEvent {
+     private final Block source;
+ 
+     public BlockSpreadEvent(@NotNull final Block block, @NotNull final Block source, @NotNull final BlockState newState) {
+-        super(block, newState);
++        super(block, source, newState);
+         this.source = source;
+     }
+ 

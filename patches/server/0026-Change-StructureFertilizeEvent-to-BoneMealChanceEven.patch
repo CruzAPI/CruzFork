@@ -1,0 +1,226 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Fri, 4 Oct 2024 22:06:18 -0300
+Subject: [PATCH] Change StructureFertilizeEvent to BoneMealChanceEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/AzaleaBlock.java b/src/main/java/net/minecraft/world/level/block/AzaleaBlock.java
+index fad69dfc20574ab23634b14252b50929cca75b21..9625f0a31f9b8c2a1f47e6d2b4abc43da8107ed8 100644
+--- a/src/main/java/net/minecraft/world/level/block/AzaleaBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/AzaleaBlock.java
+@@ -46,7 +46,13 @@ public class AzaleaBlock extends BushBlock implements BonemealableBlock {
+     public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
+         return (double)world.random.nextFloat() < 0.45;
+     }
+-
++    
++    @Override
++    public float getChance(BlockState state)
++    {
++        return 0.45F;
++    }
++    
+     @Override
+     public void performBonemeal(ServerLevel world, RandomSource random, BlockPos pos, BlockState state) {
+         TreeGrower.AZALEA.growTree(world, world.getChunkSource().getGenerator(), pos, state, random);
+diff --git a/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java b/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
+index 07fd0d8ad34d1d17798395cb4350f02c5b59b9a3..27e0664884de75c4f2d499b3713ba3d189d35c15 100644
+--- a/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/BonemealableBlock.java
+@@ -1,20 +1,33 @@
+ package net.minecraft.world.level.block;
+ 
++import com.eul4.event.block.BoneMealChanceEvent;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.util.RandomSource;
+-import net.minecraft.world.item.BoneMealItem;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.LevelReader;
+ import net.minecraft.world.level.block.state.BlockState;
++import org.bukkit.Bukkit;
++import org.bukkit.craftbukkit.block.CraftBlock;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ 
+ public interface BonemealableBlock {
+     boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state);
+ 
+     default boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state, ItemStack stack)
+     {
+-        return isBonemealSuccess(world, random, pos, state);
++        BoneMealChanceEvent event = new BoneMealChanceEvent(CraftBlock.at(world, pos), getChance(state), CraftItemStack.asBukkitCopy(stack));
++        Bukkit.getPluginManager().callEvent(event);
++        
++        float chance = event.getChance();
++        
++        return chance >= 1.0F || chance > 0.0F && world.random.nextFloat() < chance;
++    }
++    
++    default float getChance(BlockState state)
++    {
++        return 1.0F;
+     }
+     
+     boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state);
+diff --git a/src/main/java/net/minecraft/world/level/block/FungusBlock.java b/src/main/java/net/minecraft/world/level/block/FungusBlock.java
+index 454f95ba814b375e97189430b498c0e7486fbd94..90a96dc7d98d97fff9b493f61ecb07f366284705 100644
+--- a/src/main/java/net/minecraft/world/level/block/FungusBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/FungusBlock.java
+@@ -70,7 +70,13 @@ public class FungusBlock extends BushBlock implements BonemealableBlock {
+     public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
+         return (double) random.nextFloat() < 0.4D;
+     }
+-
++    
++    @Override
++    public float getChance(BlockState state)
++    {
++        return 0.4F;
++    }
++    
+     @Override
+     public void performBonemeal(ServerLevel world, RandomSource random, BlockPos pos, BlockState state) {
+         this.getFeature(world).ifPresent((holder) -> {
+diff --git a/src/main/java/net/minecraft/world/level/block/MangrovePropaguleBlock.java b/src/main/java/net/minecraft/world/level/block/MangrovePropaguleBlock.java
+index b98e17d21d43610fb7a7ce1641c518598ff48cb0..f7373b4cccf18499d4ee034cf6e86c0427b5019d 100644
+--- a/src/main/java/net/minecraft/world/level/block/MangrovePropaguleBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/MangrovePropaguleBlock.java
+@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
+ import net.minecraft.core.Direction;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.util.RandomSource;
++import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.context.BlockPlaceContext;
+ import net.minecraft.world.level.BlockGetter;
+ import net.minecraft.world.level.Level;
+@@ -128,12 +129,20 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
+     public boolean isValidBonemealTarget(LevelReader world, BlockPos pos, BlockState state) {
+         return !isHanging(state) || !isFullyGrown(state);
+     }
+-
++    
+     @Override
+     public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
+         return isHanging(state) ? !isFullyGrown(state) : super.isBonemealSuccess(world, random, pos, state);
+     }
+ 
++    @Override
++    public float getChance(BlockState state)
++    {
++        return isHanging(state)
++                ? !isFullyGrown(state) ? 1.0F : 0.0F
++                : super.getChance(state);
++    }
++
+     @Override
+     public void performBonemeal(ServerLevel world, RandomSource random, BlockPos pos, BlockState state) {
+         if (isHanging(state) && !isFullyGrown(state)) {
+diff --git a/src/main/java/net/minecraft/world/level/block/MushroomBlock.java b/src/main/java/net/minecraft/world/level/block/MushroomBlock.java
+index e81b63e95489dbc425ca312ce7a2174dfb59ca3a..81a3a38a60cffdbf642f6df9ac0eaf4491e217c4 100644
+--- a/src/main/java/net/minecraft/world/level/block/MushroomBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/MushroomBlock.java
+@@ -1,6 +1,5 @@
+ package net.minecraft.world.level.block;
+ 
+-import com.eul4.event.block.StructureFertilizeEvent;
+ import com.mojang.serialization.MapCodec;
+ import com.mojang.serialization.codecs.RecordCodecBuilder;
+ import java.util.Iterator;
+@@ -12,7 +11,6 @@ import net.minecraft.resources.ResourceKey;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.tags.BlockTags;
+ import net.minecraft.util.RandomSource;
+-import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.level.BlockGetter;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.LevelReader;
+@@ -22,10 +20,7 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+ import net.minecraft.world.phys.shapes.CollisionContext;
+ import net.minecraft.world.phys.shapes.VoxelShape;
+ // CraftBukkit start
+-import org.bukkit.Bukkit;
+ import org.bukkit.TreeType;
+-import org.bukkit.craftbukkit.block.CraftBlock;
+-import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ // CraftBukkit end
+ 
+ public class MushroomBlock extends BushBlock implements BonemealableBlock {
+@@ -126,18 +121,14 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
+     }
+     
+     @Override
+-    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos,
+-        net.minecraft.world.level.block.state.BlockState state, ItemStack stack)
+-    {
+-        StructureFertilizeEvent event = new StructureFertilizeEvent(CraftBlock.at(world, pos), 0.4F, CraftItemStack.asBukkitCopy(stack));
+-        Bukkit.getPluginManager().callEvent(event);
+-        
+-        return !event.isCancelled() && world.random.nextFloat() < event.getChance();
++    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
++        return (double) random.nextFloat() < 0.4D;
+     }
+     
+     @Override
+-    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, BlockState state) {
+-        return (double) random.nextFloat() < 0.4D;
++    public float getChance(BlockState state)
++    {
++        return 0.4F;
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/world/level/block/SaplingBlock.java b/src/main/java/net/minecraft/world/level/block/SaplingBlock.java
+index 170a48e0da23c26ccb714e7c96e2fa42404ba214..83b15e9b7a5bb32cd430dc280f4ecb559991483d 100644
+--- a/src/main/java/net/minecraft/world/level/block/SaplingBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/SaplingBlock.java
+@@ -1,12 +1,10 @@
+ package net.minecraft.world.level.block;
+ 
+-import com.eul4.event.block.StructureFertilizeEvent;
+ import com.mojang.serialization.MapCodec;
+ import com.mojang.serialization.codecs.RecordCodecBuilder;
+ import net.minecraft.core.BlockPos;
+ import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.util.RandomSource;
+-import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.level.BlockGetter;
+ import net.minecraft.world.level.Level;
+ import net.minecraft.world.level.LevelReader;
+@@ -18,13 +16,10 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
+ import net.minecraft.world.phys.shapes.CollisionContext;
+ import net.minecraft.world.phys.shapes.VoxelShape;
+ // CraftBukkit start
+-import org.bukkit.Bukkit;
+ import org.bukkit.Location;
+ import org.bukkit.TreeType;
+ import org.bukkit.block.BlockState;
+ import org.bukkit.craftbukkit.block.CapturedBlockState;
+-import org.bukkit.craftbukkit.block.CraftBlock;
+-import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ import org.bukkit.craftbukkit.util.CraftLocation;
+ import org.bukkit.event.world.StructureAgeEvent;
+ import org.bukkit.event.world.StructureGrowEvent;
+@@ -115,17 +110,14 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
+     }
+     
+     @Override
+-    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos,
+-        net.minecraft.world.level.block.state.BlockState state, ItemStack stack)
+-    {
+-        StructureFertilizeEvent event = new StructureFertilizeEvent(CraftBlock.at(world, pos), 0.45F, CraftItemStack.asBukkitCopy(stack));
+-        Bukkit.getPluginManager().callEvent(event);
+-        return !event.isCancelled() && world.random.nextFloat() < event.getChance();
++    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
++        return (double) world.random.nextFloat() < 0.45D;
+     }
+     
+     @Override
+-    public boolean isBonemealSuccess(Level world, RandomSource random, BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+-        return (double) world.random.nextFloat() < 0.45D;
++    public float getChance(net.minecraft.world.level.block.state.BlockState state)
++    {
++        return 0.45F;
+     }
+ 
+     @Override

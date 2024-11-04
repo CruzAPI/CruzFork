@@ -1,0 +1,103 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Sun, 6 Oct 2024 15:42:31 -0300
+Subject: [PATCH] Add fromBonemeal to BlockGrowEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/item/BoneMealItem.java b/src/main/java/net/minecraft/world/item/BoneMealItem.java
+index 1e10dc6ef659832fa4d709e5f4972aee01009c0e..f6174d490f14ab8a9432ebfbfa36bcd6d96b3884 100644
+--- a/src/main/java/net/minecraft/world/item/BoneMealItem.java
++++ b/src/main/java/net/minecraft/world/item/BoneMealItem.java
+@@ -29,6 +29,8 @@ public class BoneMealItem extends Item {
+     public static final int GRASS_SPREAD_HEIGHT = 1;
+     public static final int GRASS_COUNT_MULTIPLIER = 3;
+ 
++    public static boolean fromBonemeal;
++    
+     public BoneMealItem(Item.Properties settings) {
+         super(settings);
+     }
+@@ -40,33 +42,42 @@ public class BoneMealItem extends Item {
+     }
+ 
+     public static InteractionResult applyBonemeal(UseOnContext itemactioncontext) {
+-        // CraftBukkit end
+-        Level world = itemactioncontext.getLevel();
+-        BlockPos blockposition = itemactioncontext.getClickedPos();
+-        BlockPos blockposition1 = blockposition.relative(itemactioncontext.getClickedFace());
+-
+-        if (BoneMealItem.growCrop(itemactioncontext.getItemInHand(), world, blockposition)) {
+-            if (!world.isClientSide) {
+-                if (itemactioncontext.getPlayer() != null) itemactioncontext.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
+-                world.levelEvent(1505, blockposition, 15);
+-            }
+-
+-            return InteractionResult.sidedSuccess(world.isClientSide);
+-        } else {
+-            BlockState iblockdata = world.getBlockState(blockposition);
+-            boolean flag = iblockdata.isFaceSturdy(world, blockposition, itemactioncontext.getClickedFace());
+-
+-            if (flag && BoneMealItem.growWaterPlant(itemactioncontext.getItemInHand(), world, blockposition1, itemactioncontext.getClickedFace())) {
++        try
++        {
++            fromBonemeal = true;
++            
++            // CraftBukkit end
++            Level world = itemactioncontext.getLevel();
++            BlockPos blockposition = itemactioncontext.getClickedPos();
++            BlockPos blockposition1 = blockposition.relative(itemactioncontext.getClickedFace());
++            
++            if (BoneMealItem.growCrop(itemactioncontext.getItemInHand(), world, blockposition)) {
+                 if (!world.isClientSide) {
+                     if (itemactioncontext.getPlayer() != null) itemactioncontext.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
+-                    world.levelEvent(1505, blockposition1, 15);
++                    world.levelEvent(1505, blockposition, 15);
+                 }
+-
++                
+                 return InteractionResult.sidedSuccess(world.isClientSide);
+             } else {
+-                return InteractionResult.PASS;
++                BlockState iblockdata = world.getBlockState(blockposition);
++                boolean flag = iblockdata.isFaceSturdy(world, blockposition, itemactioncontext.getClickedFace());
++                
++                if (flag && BoneMealItem.growWaterPlant(itemactioncontext.getItemInHand(), world, blockposition1, itemactioncontext.getClickedFace())) {
++                    if (!world.isClientSide) {
++                        if (itemactioncontext.getPlayer() != null) itemactioncontext.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH); // CraftBukkit - SPIGOT-7518
++                        world.levelEvent(1505, blockposition1, 15);
++                    }
++                    
++                    return InteractionResult.sidedSuccess(world.isClientSide);
++                } else {
++                    return InteractionResult.PASS;
++                }
+             }
+         }
++        finally
++        {
++            fromBonemeal = false;
++        }
+     }
+ 
+     public static boolean growCrop(ItemStack stack, Level world, BlockPos pos) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 28743a960ab6db4c211c8ee3b67c99fde1c6a2aa..dd34ec22197c13ce8a07c642637a3e7e17d10b4d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -48,6 +48,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
+ import net.minecraft.world.inventory.CraftingContainer;
+ import net.minecraft.world.inventory.MerchantMenu;
+ import net.minecraft.world.inventory.RecipeBookType;
++import net.minecraft.world.item.BoneMealItem;
+ import net.minecraft.world.item.ItemStack;
+ import net.minecraft.world.item.Items;
+ import net.minecraft.world.item.context.UseOnContext;
+@@ -1336,7 +1337,7 @@ public class CraftEventFactory {
+         CraftBlockState state = (CraftBlockState) block.getState();
+         state.setData(newData);
+         
+-        BlockGrowEvent event = new BlockGrowEvent(block, source, state);
++        BlockGrowEvent event = new BlockGrowEvent(block, source, state, BoneMealItem.fromBonemeal);
+         Bukkit.getPluginManager().callEvent(event);
+ 
+         if (!event.isCancelled()) {

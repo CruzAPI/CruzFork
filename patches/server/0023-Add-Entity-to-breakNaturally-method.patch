@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Thu, 3 Oct 2024 18:28:28 -0300
+Subject: [PATCH] Add Entity to breakNaturally method
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index 48286841feca4ac8d82f62c807cd9cfdf71bb68f..acf884e4798ae720ed633157a0b3ab5627364a11 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -504,6 +504,11 @@ public class CraftBlock implements Block {
+ 
+     @Override
+     public boolean breakNaturally(ItemStack item, boolean triggerEffect, boolean dropExperience) {
++        return this.breakNaturally(item, null, triggerEffect, dropExperience);
++    }
++    
++    @Override
++    public boolean breakNaturally(ItemStack item, Entity entity, boolean triggerEffect, boolean dropExperience) {
+         // Paper end
+         // Order matters here, need to drop before setting to air so skulls can get their data
+         net.minecraft.world.level.block.state.BlockState iblockdata = this.getNMS();
+@@ -514,11 +519,11 @@ public class CraftBlock implements Block {
+         ServerLevel serverLevel = this.world.getMinecraftWorld();
+         int xp = iblockdata.getBlock().getExpDrop(iblockdata, serverLevel, position, nmsItem, true);
+         List<ItemStack> itemStackList = new ArrayList<>();
+-        BlockBreakNaturallyEvent event = new BlockBreakNaturallyEvent(this, xp, triggerEffect, dropExperience, item, itemStackList);
++        BlockBreakNaturallyEvent event = new BlockBreakNaturallyEvent(this, xp, triggerEffect, dropExperience, item, entity, itemStackList);
+         // Modelled off EntityHuman#hasBlock
+         if (block != Blocks.AIR && (item == null || !iblockdata.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(iblockdata))) {
+             serverLevel.captureDrops = new ArrayList<>();
+-            net.minecraft.world.level.block.Block.dropResources(iblockdata, this.world.getMinecraftWorld(), this.position, this.world.getBlockEntity(this.position), null, nmsItem, false); // Paper - Properly handle xp dropping
++            net.minecraft.world.level.block.Block.dropResources(iblockdata, this.world.getMinecraftWorld(), this.position, this.world.getBlockEntity(this.position), entity == null ? null : ((CraftEntity) entity).getHandle(), nmsItem, false); // Paper - Properly handle xp dropping
+             
+             for(ItemEntity itemEntity : serverLevel.captureDrops)
+             {

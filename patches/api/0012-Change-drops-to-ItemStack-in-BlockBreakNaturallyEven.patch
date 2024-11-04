@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Mon, 2 Sep 2024 21:10:59 -0300
+Subject: [PATCH] Change drops to ItemStack in BlockBreakNaturallyEvent
+
+
+diff --git a/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java b/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
+index 23c2d4688eaca32f035ccdd0cfd91b31551c2795..1035348f1b2fbabc38993a38283af5bd20fe4f51 100644
+--- a/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
++++ b/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
+@@ -16,7 +16,7 @@ public class BlockBreakNaturallyEvent extends BlockExpEvent implements Cancellab
+ {
+     private static final HandlerList HANDLER_LIST = new HandlerList();
+     
+-    private final List<Item> items;
++    private final List<ItemStack> items;
+     
+     private boolean triggerEffect;
+     private boolean dropExperience;
+@@ -29,7 +29,7 @@ public class BlockBreakNaturallyEvent extends BlockExpEvent implements Cancellab
+         boolean triggerEffect,
+         boolean dropExperience,
+         @Nullable ItemStack tool,
+-        @NotNull List<Item> items)
++        @NotNull List<ItemStack> items)
+     {
+         super(block, xp);
+         this.tool = tool;
+@@ -68,7 +68,7 @@ public class BlockBreakNaturallyEvent extends BlockExpEvent implements Cancellab
+     }
+     
+     @NotNull
+-    public List<Item> getItems()
++    public List<ItemStack> getItems()
+     {
+         return items;
+     }

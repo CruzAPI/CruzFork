@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Sat, 31 Aug 2024 14:46:43 -0300
+Subject: [PATCH] Change amount to float in EquipmentHurtEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index 8d0f29c052ee81aed29ff516e76aa781aefdce16..c7eb4b157315b92900440430f5a801d577c4a751 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -2173,7 +2173,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
+ 
+     protected void doHurtEquipment(DamageSource source, float amount, EquipmentSlot... slots) {
+         if (amount > 0.0F) {
+-            int i = (int) Math.max(1.0F, amount / 4.0F);
++            float i = Math.max(1.0F, amount / 4.0F);
+             EquipmentSlot[] aenumitemslot1 = slots;
+             int j = slots.length;
+ 
+diff --git a/src/main/java/net/minecraft/world/item/ItemStack.java b/src/main/java/net/minecraft/world/item/ItemStack.java
+index d225ff7836a45fb0bffbcf67618867221f0d35dd..6040c2bd40b9736b565f61f1b373b6cf486b68ad 100644
+--- a/src/main/java/net/minecraft/world/item/ItemStack.java
++++ b/src/main/java/net/minecraft/world/item/ItemStack.java
+@@ -727,7 +727,7 @@ public final class ItemStack implements DataComponentHolder {
+         hurtAndBreak(event.getAmount(), entity, slot);
+     }
+     
+-    public void hurtAndBreak(int amount, DamageSource damageSource, LivingEntity entity, EquipmentSlot slot)
++    public void hurtAndBreak(float amount, DamageSource damageSource, LivingEntity entity, EquipmentSlot slot)
+     {
+         EquipmentHurtEvent event = CraftEventFactory.callEquipmentHurtEvent(entity, amount, this, damageSource);
+         
+@@ -736,7 +736,7 @@ public final class ItemStack implements DataComponentHolder {
+             return;
+         }
+         
+-        hurtAndBreak(event.getAmount(), entity, slot);
++        hurtAndBreak((int) event.getAmount(), entity, slot);
+     }
+     
+     public void hurtAndBreak(int amount, LivingEntity entity, EquipmentSlot slot) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 2c4fff0d65e039866f2d467443693aa2ed08e389..ef161c121ceeaa7e21c7286a760b28263a00d6cc 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1589,7 +1589,7 @@ public class CraftEventFactory {
+     public static EquipmentHurtEvent callEquipmentHurtEvent
+     (
+         net.minecraft.world.entity.LivingEntity entity,
+-        int amount,
++        float amount,
+         net.minecraft.world.item.ItemStack nmsStack,
+         net.minecraft.world.damagesource.DamageSource damageSource
+     )

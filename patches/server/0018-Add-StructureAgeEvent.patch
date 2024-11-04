@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Sun, 29 Sep 2024 21:32:05 -0300
+Subject: [PATCH] Add StructureAgeEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/SaplingBlock.java b/src/main/java/net/minecraft/world/level/block/SaplingBlock.java
+index d262a5a6da57ef9ba9a6fe0dfbc88f577105e74f..66e08181547178302e12b9ce1b77fda01028b132 100644
+--- a/src/main/java/net/minecraft/world/level/block/SaplingBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/SaplingBlock.java
+@@ -21,6 +21,7 @@ import org.bukkit.TreeType;
+ import org.bukkit.block.BlockState;
+ import org.bukkit.craftbukkit.block.CapturedBlockState;
+ import org.bukkit.craftbukkit.util.CraftLocation;
++import org.bukkit.event.world.StructureAgeEvent;
+ import org.bukkit.event.world.StructureGrowEvent;
+ // CraftBukkit end
+ 
+@@ -62,6 +63,13 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
+     }
+ 
+     public void advanceTree(ServerLevel world, BlockPos pos, net.minecraft.world.level.block.state.BlockState state, RandomSource random) {
++        Location location = CraftLocation.toBukkit(pos, world.getWorld());
++        
++        if(!new StructureAgeEvent(location, SaplingBlock.treeType, false, null).callEvent())
++        {
++            return;
++        }
++        
+         if ((Integer) state.getValue(SaplingBlock.STAGE) == 0) {
+             world.setBlock(pos, (net.minecraft.world.level.block.state.BlockState) state.cycle(SaplingBlock.STAGE), 4);
+         } else {
+@@ -75,7 +83,6 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
+                 if (world.capturedBlockStates.size() > 0) {
+                     TreeType treeType = SaplingBlock.treeType;
+                     SaplingBlock.treeType = null;
+-                    Location location = CraftLocation.toBukkit(pos, world.getWorld());
+                     java.util.List<BlockState> blocks = new java.util.ArrayList<>(world.capturedBlockStates.values());
+                     world.capturedBlockStates.clear();
+                     StructureGrowEvent event = null;

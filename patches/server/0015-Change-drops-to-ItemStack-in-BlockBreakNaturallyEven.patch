@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Mon, 2 Sep 2024 21:10:30 -0300
+Subject: [PATCH] Change drops to ItemStack in BlockBreakNaturallyEvent
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index 016b9d00800d71677b2dde20c8bb5f89a282c629..48286841feca4ac8d82f62c807cd9cfdf71bb68f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -513,8 +513,8 @@ public class CraftBlock implements Block {
+         
+         ServerLevel serverLevel = this.world.getMinecraftWorld();
+         int xp = iblockdata.getBlock().getExpDrop(iblockdata, serverLevel, position, nmsItem, true);
+-        List<Item> items = new ArrayList<>();
+-        BlockBreakNaturallyEvent event = new BlockBreakNaturallyEvent(this, xp, triggerEffect, dropExperience, item, items);
++        List<ItemStack> itemStackList = new ArrayList<>();
++        BlockBreakNaturallyEvent event = new BlockBreakNaturallyEvent(this, xp, triggerEffect, dropExperience, item, itemStackList);
+         // Modelled off EntityHuman#hasBlock
+         if (block != Blocks.AIR && (item == null || !iblockdata.requiresCorrectToolForDrops() || nmsItem.isCorrectToolForDrops(iblockdata))) {
+             serverLevel.captureDrops = new ArrayList<>();
+@@ -522,7 +522,7 @@ public class CraftBlock implements Block {
+             
+             for(ItemEntity itemEntity : serverLevel.captureDrops)
+             {
+-                items.add((Item) itemEntity.getBukkitEntity());
++                itemStackList.add(CraftItemStack.asBukkitCopy(itemEntity.getItem()));
+             }
+             serverLevel.captureDrops = null;
+             
+@@ -534,18 +534,14 @@ public class CraftBlock implements Block {
+             return false;
+         }
+         
+-        items = event.getItems();
++        itemStackList = event.getItems();
+         dropExperience = event.getDropExperience();
+         xp = event.getExpToDrop();
+         triggerEffect = event.getTriggerEffect();
+         
+-        for(Item bukkitItem : items)
++        for(ItemStack itemStack : itemStackList)
+         {
+-            if(!bukkitItem.isValid())
+-            {
+-                net.minecraft.world.entity.Entity entity = ((org.bukkit.craftbukkit.entity.CraftItem) bukkitItem).getHandle();
+-                entity.level().addFreshEntity(entity);
+-            }
++            net.minecraft.world.level.block.Block.popResource(this.world.getMinecraftWorld(), position, CraftItemStack.asNMSCopy(itemStack));
+         }
+         
+         if(triggerEffect)

@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Mon, 9 Sep 2024 15:41:22 -0300
+Subject: [PATCH] Add setResult in MerchantRecipe
+
+
+diff --git a/src/main/java/org/bukkit/inventory/MerchantRecipe.java b/src/main/java/org/bukkit/inventory/MerchantRecipe.java
+index 4e59f5176fd6cf92457ad750081c253a58790b61..1a98686536457240206a6db5059a67a316bd1148 100644
+--- a/src/main/java/org/bukkit/inventory/MerchantRecipe.java
++++ b/src/main/java/org/bukkit/inventory/MerchantRecipe.java
+@@ -104,7 +104,13 @@ public class MerchantRecipe implements Recipe {
+     public ItemStack getResult() {
+         return result.clone(); // Paper
+     }
+-
++    
++    public void setResult(@NotNull ItemStack result)
++    {
++        Preconditions.checkArgument(!result.isEmpty(), "Recipe cannot have an empty result.");
++        this.result = result;
++    }
++    
+     public void addIngredient(@NotNull ItemStack item) {
+         Preconditions.checkState(ingredients.size() < 2, "MerchantRecipe can only have maximum 2 ingredients");
+         Preconditions.checkArgument(!item.isEmpty(), "Recipe cannot have an empty itemstack ingredient."); // Paper

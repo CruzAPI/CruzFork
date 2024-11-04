@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Wed, 2 Oct 2024 21:43:17 -0300
+Subject: [PATCH] Add source in BlockGrowEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/level/block/StemBlock.java b/src/main/java/net/minecraft/world/level/block/StemBlock.java
+index 924d80eb41d9a71d1e521c40742557251cf51832..e465bc2e19886c700a4f500a298e07c306134c08 100644
+--- a/src/main/java/net/minecraft/world/level/block/StemBlock.java
++++ b/src/main/java/net/minecraft/world/level/block/StemBlock.java
+@@ -93,7 +93,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
+ 
+                         if (optional.isPresent() && optional1.isPresent()) {
+                             // CraftBukkit start
+-                            if (!CraftEventFactory.handleBlockGrowEvent(world, blockposition1, ((Block) optional.get()).defaultBlockState())) {
++                            if (!CraftEventFactory.handleBlockGrowEvent(world, blockposition1, pos, ((Block) optional.get()).defaultBlockState())) {
+                                 return;
+                             }
+                             // CraftBukkit end
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index ef161c121ceeaa7e21c7286a760b28263a00d6cc..cb5e5d5b3d5806031a5a1c50669fdf1c0d4a4cb7 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -1316,16 +1316,27 @@ public class CraftEventFactory {
+     }
+     // Paper end
+ 
++    public static boolean handleBlockGrowEvent(Level world, BlockPos pos, BlockPos sourcePos, net.minecraft.world.level.block.state.BlockState block)
++    {
++        return CraftEventFactory.handleBlockGrowEvent(world, pos, sourcePos, block, 3);
++    }
++
+     public static boolean handleBlockGrowEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState block) {
+         return CraftEventFactory.handleBlockGrowEvent(world, pos, block, 3);
+     }
+ 
+-    public static boolean handleBlockGrowEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState newData, int flag) {
++    public static boolean handleBlockGrowEvent(Level world, BlockPos pos, net.minecraft.world.level.block.state.BlockState newData, int flag)
++    {
++        return CraftEventFactory.handleBlockGrowEvent(world, pos, pos, newData, flag);
++    }
++    
++    public static boolean handleBlockGrowEvent(Level world, BlockPos pos, BlockPos sourcePos, net.minecraft.world.level.block.state.BlockState newData, int flag) {
+         Block block = world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
++        Block source = CraftBlock.at(world, sourcePos);
+         CraftBlockState state = (CraftBlockState) block.getState();
+         state.setData(newData);
+-
+-        BlockGrowEvent event = new BlockGrowEvent(block, state);
++        
++        BlockGrowEvent event = new BlockGrowEvent(block, source, state);
+         Bukkit.getPluginManager().callEvent(event);
+ 
+         if (!event.isCancelled()) {

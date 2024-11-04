@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Sun, 6 Oct 2024 21:59:12 -0300
+Subject: [PATCH] Add originalReplacement to PlayerItemConsumeEvent
+
+
+diff --git a/src/main/java/net/minecraft/world/entity/LivingEntity.java b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+index c7eb4b157315b92900440430f5a801d577c4a751..ac8e76033247df97a0eb79e15a437e1d8ce35aa1 100644
+--- a/src/main/java/net/minecraft/world/entity/LivingEntity.java
++++ b/src/main/java/net/minecraft/world/entity/LivingEntity.java
+@@ -4070,7 +4070,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
+                     if (this instanceof ServerPlayer) {
+                         org.bukkit.inventory.ItemStack craftItem = CraftItemStack.asBukkitCopy(this.useItem);
+                         org.bukkit.inventory.EquipmentSlot hand = org.bukkit.craftbukkit.CraftEquipmentSlot.getHand(enumhand);
+-                        event = new PlayerItemConsumeEvent((Player) this.getBukkitEntity(), craftItem, hand); // Paper
++                        
++                        org.bukkit.inventory.ItemStack originalReplacement = CraftItemStack.asBukkitCopy(this.useItem.copy().finishUsingItem(this.level(), this));
++                        
++                        event = new PlayerItemConsumeEvent((Player) this.getBukkitEntity(), craftItem, originalReplacement, hand); // Paper
+                         this.level().getCraftServer().getPluginManager().callEvent(event);
+ 
+                         if (event.isCancelled()) {

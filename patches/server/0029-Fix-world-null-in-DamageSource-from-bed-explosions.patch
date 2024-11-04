@@ -1,0 +1,191 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Thu, 10 Oct 2024 20:31:12 -0300
+Subject: [PATCH] Fix world null in DamageSource from bed explosions
+
+
+diff --git a/src/main/java/net/minecraft/world/damagesource/DamageSource.java b/src/main/java/net/minecraft/world/damagesource/DamageSource.java
+index bb1a60180e58c1333e7bb33e8acf1b0225eda8a8..1fe2755a62a3827a457c2c8b459846e5d9fdd915 100644
+--- a/src/main/java/net/minecraft/world/damagesource/DamageSource.java
++++ b/src/main/java/net/minecraft/world/damagesource/DamageSource.java
+@@ -5,11 +5,13 @@ import net.minecraft.core.Holder;
+ import net.minecraft.core.component.DataComponents;
+ import net.minecraft.network.chat.Component;
+ import net.minecraft.resources.ResourceKey;
++import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.tags.TagKey;
+ import net.minecraft.world.entity.Entity;
+ import net.minecraft.world.entity.LivingEntity;
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.item.ItemStack;
++import net.minecraft.world.level.Level;
+ import net.minecraft.world.phys.Vec3;
+ 
+ public class DamageSource {
+@@ -21,6 +23,10 @@ public class DamageSource {
+     private final Entity directEntity;
+     @Nullable
+     private final Vec3 damageSourcePosition;
++    
++    @Nullable
++    private final Level world;
++    
+     // CraftBukkit start
+     @Nullable
+     private org.bukkit.block.Block directBlock; // The block that caused the damage. damageSourcePosition is not used for all block damages
+@@ -111,7 +117,7 @@ public class DamageSource {
+     }
+ 
+     private DamageSource cloneInstance() {
+-        DamageSource damageSource = new DamageSource(this.type, this.directEntity, this.causingEntity, this.damageSourcePosition);
++        DamageSource damageSource = new DamageSource(this.type, this.directEntity, this.causingEntity, this.world, this.damageSourcePosition);
+         damageSource.directBlock = this.getDirectBlock();
+         damageSource.directBlockState = this.getDirectBlockState();
+         damageSource.sweep = this.isSweep();
+@@ -133,19 +139,26 @@ public class DamageSource {
+         return this.causingEntity == this.directEntity;
+     }
+ 
+-    public DamageSource(Holder<DamageType> type, @Nullable Entity source, @Nullable Entity attacker, @Nullable Vec3 position) {
++    public DamageSource(Holder<DamageType> type, @Nullable Entity source, @Nullable Entity attacker, @Nullable Level world, @Nullable Vec3 position) {
+         this.type = type;
+         this.causingEntity = attacker;
+         this.directEntity = source;
++        this.world = world;
+         this.damageSourcePosition = position;
+     }
+ 
+     public DamageSource(Holder<DamageType> type, @Nullable Entity source, @Nullable Entity attacker) {
+-        this(type, source, attacker, (Vec3) null);
++        this(type, source, attacker, null, (Vec3) null);
+     }
+ 
+-    public DamageSource(Holder<DamageType> type, Vec3 position) {
+-        this(type, (Entity) null, (Entity) null, position);
++    public DamageSource(Holder<DamageType> type, Level world, Vec3 position)
++    {
++        this(type, null, null, world, position);
++    }
++    
++    public DamageSource(Holder<DamageType> type, Vec3 position)
++    {
++        this(type, (Entity) null, (Entity) null, null, position);
+     }
+ 
+     public DamageSource(Holder<DamageType> type, @Nullable Entity attacker) {
+@@ -153,7 +166,7 @@ public class DamageSource {
+     }
+ 
+     public DamageSource(Holder<DamageType> type) {
+-        this(type, (Entity) null, (Entity) null, (Vec3) null);
++        this(type, (Entity) null, (Entity) null, null, (Vec3) null);
+     }
+ 
+     @Nullable
+@@ -246,6 +259,11 @@ public class DamageSource {
+     public Vec3 sourcePositionRaw() {
+         return this.damageSourcePosition;
+     }
++    
++    @Nullable
++    public Level getWorld() {
++        return this.world;
++    }
+ 
+     public boolean is(TagKey<DamageType> tag) {
+         return this.type.is(tag);
+diff --git a/src/main/java/net/minecraft/world/damagesource/DamageSources.java b/src/main/java/net/minecraft/world/damagesource/DamageSources.java
+index e34584e4780f343d6c946af5377088d53818e88e..304881e13f4bf8b10daf7d7ebb8b3e8395eb415e 100644
+--- a/src/main/java/net/minecraft/world/damagesource/DamageSources.java
++++ b/src/main/java/net/minecraft/world/damagesource/DamageSources.java
+@@ -14,6 +14,7 @@ import net.minecraft.world.entity.projectile.FireworkRocketEntity;
+ import net.minecraft.world.entity.projectile.WitherSkull;
+ import net.minecraft.world.level.Explosion;
+ import net.minecraft.world.phys.Vec3;
++import org.bukkit.craftbukkit.CraftWorld;
+ 
+ public class DamageSources {
+ 
+@@ -277,7 +278,7 @@ public class DamageSources {
+     }
+ 
+     public DamageSource badRespawnPointExplosion(Vec3 vec3d, org.bukkit.block.BlockState blockState) {
+-        return new DamageSource(this.damageTypes.getHolderOrThrow(DamageTypes.BAD_RESPAWN_POINT), vec3d).directBlockState(blockState);
++        return new DamageSource(this.damageTypes.getHolderOrThrow(DamageTypes.BAD_RESPAWN_POINT), ((CraftWorld) blockState.getWorld()).getHandle(), vec3d).directBlockState(blockState);
+         // CraftBukkit end
+     }
+ 
+diff --git a/src/main/java/net/minecraft/world/item/enchantment/effects/ExplodeEffect.java b/src/main/java/net/minecraft/world/item/enchantment/effects/ExplodeEffect.java
+index 65d55f4c7b42ddb32a2d22d72bf85443a24601c5..37a36d9ace389c21818911831164e71fff99d4a7 100644
+--- a/src/main/java/net/minecraft/world/item/enchantment/effects/ExplodeEffect.java
++++ b/src/main/java/net/minecraft/world/item/enchantment/effects/ExplodeEffect.java
+@@ -58,7 +58,7 @@ public record ExplodeEffect(
+         Vec3 vec3 = pos.add(this.offset);
+         world.explode(
+             this.attributeToUser ? user : null,
+-            this.getDamageSource(user, vec3),
++            this.getDamageSource(user, world, vec3),
+             new SimpleExplosionDamageCalculator(
+                 this.blockInteraction != Level.ExplosionInteraction.NONE,
+                 this.damageType.isPresent(),
+@@ -78,11 +78,11 @@ public record ExplodeEffect(
+     }
+ 
+     @Nullable
+-    private DamageSource getDamageSource(Entity user, Vec3 pos) {
++    private DamageSource getDamageSource(Entity user, ServerLevel world, Vec3 pos) {
+         if (this.damageType.isEmpty()) {
+             return null;
+         } else {
+-            return this.attributeToUser ? new DamageSource(this.damageType.get(), user) : new DamageSource(this.damageType.get(), pos);
++            return this.attributeToUser ? new DamageSource(this.damageType.get(), user) : new DamageSource(this.damageType.get(), world, pos);
+         }
+     }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/damage/CraftDamageSource.java b/src/main/java/org/bukkit/craftbukkit/damage/CraftDamageSource.java
+index 9561ea8cded40142bff75c25b6f9a4a9269d6272..8879c40ab83a3b8f9a320f528c852b211abb343c 100644
+--- a/src/main/java/org/bukkit/craftbukkit/damage/CraftDamageSource.java
++++ b/src/main/java/org/bukkit/craftbukkit/damage/CraftDamageSource.java
+@@ -3,10 +3,12 @@ package org.bukkit.craftbukkit.damage;
+ import java.util.Objects;
+ import java.util.Optional;
+ 
++import net.minecraft.server.level.ServerLevel;
+ import net.minecraft.world.phys.Vec3;
+ import org.bukkit.Location;
+ import org.bukkit.World;
+ import org.bukkit.block.Block;
++import org.bukkit.craftbukkit.CraftWorld;
+ import org.bukkit.craftbukkit.entity.CraftEntity;
+ import org.bukkit.craftbukkit.util.CraftLocation;
+ import org.bukkit.damage.DamageSource;
+@@ -58,9 +60,17 @@ public class CraftDamageSource implements DamageSource {
+     @Override
+     public Location getDamageLocation() {
+         Vec3 vec3D = this.getHandle().sourcePositionRaw();
+-        return (vec3D != null) ? CraftLocation.toBukkit(vec3D, this.getCausingEntityWorld()) : null;
++        return (vec3D != null) ? CraftLocation.toBukkit(vec3D, this.getCausingEntityWorld() == null ? getWorld() : this.getCausingEntityWorld()) : null;
+     }
+ 
++    @Override
++    public World getWorld()
++    {
++        return this.getHandle().getWorld() == null
++            ? null
++            : this.getHandle().getWorld().getWorld();
++    }
++    
+     @Override
+     public Location getSourceLocation() {
+         Vec3 vec3D = this.getHandle().getSourcePosition();
+@@ -126,8 +136,8 @@ public class CraftDamageSource implements DamageSource {
+         }
+ 
+         Vec3 vec3D = (damageLocation == null) ? null : CraftLocation.toVec3D(damageLocation);
+-
+-        return new CraftDamageSource(new net.minecraft.world.damagesource.DamageSource(holderDamageType, nmsDirectEntity, nmsCausingEntity, vec3D));
++        ServerLevel world = damageLocation == null ? null : ((CraftWorld) damageLocation.getWorld()).getHandle();
++        return new CraftDamageSource(new net.minecraft.world.damagesource.DamageSource(holderDamageType, nmsDirectEntity, nmsCausingEntity, world, vec3D));
+     }
+     
+     @Override

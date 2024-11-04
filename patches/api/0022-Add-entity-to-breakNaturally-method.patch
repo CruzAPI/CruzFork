@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Thu, 3 Oct 2024 18:28:54 -0300
+Subject: [PATCH] Add entity to breakNaturally method
+
+
+diff --git a/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java b/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
+index 1035348f1b2fbabc38993a38283af5bd20fe4f51..8ff572418d0fa8fb3e7011a710fbc029edb774d9 100644
+--- a/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
++++ b/src/main/java/com/eul4/event/block/BlockBreakNaturallyEvent.java
+@@ -1,6 +1,7 @@
+ package com.eul4.event.block;
+ 
+ import org.bukkit.block.Block;
++import org.bukkit.entity.Entity;
+ import org.bukkit.entity.Item;
+ import org.bukkit.event.Cancellable;
+ import org.bukkit.event.HandlerList;
+@@ -22,6 +23,7 @@ public class BlockBreakNaturallyEvent extends BlockExpEvent implements Cancellab
+     private boolean dropExperience;
+     private boolean cancelled;
+     private @Nullable ItemStack tool;
++    private @Nullable Entity entity;
+     
+     @ApiStatus.Internal
+     public BlockBreakNaturallyEvent(@NotNull Block block,
+@@ -29,10 +31,12 @@ public class BlockBreakNaturallyEvent extends BlockExpEvent implements Cancellab
+         boolean triggerEffect,
+         boolean dropExperience,
+         @Nullable ItemStack tool,
++        @Nullable Entity entity,
+         @NotNull List<ItemStack> items)
+     {
+         super(block, xp);
+         this.tool = tool;
++        this.entity = entity;
+         this.items = items;
+         this.triggerEffect = triggerEffect;
+         this.dropExperience = dropExperience;
+@@ -49,6 +53,12 @@ public class BlockBreakNaturallyEvent extends BlockExpEvent implements Cancellab
+         this.tool = tool;
+     }
+     
++    @Nullable
++    public Entity getEntity()
++    {
++        return entity;
++    }
++    
+     /**
+      * @return If the event is cancelled, meaning the block will not be destroyed
+      */
+diff --git a/src/main/java/org/bukkit/block/Block.java b/src/main/java/org/bukkit/block/Block.java
+index a13c8ddd4a1222e7a16debb61769af3758502d7c..1f9ae5086e6ed565ebdaef551b4b669351c11f95 100644
+--- a/src/main/java/org/bukkit/block/Block.java
++++ b/src/main/java/org/bukkit/block/Block.java
+@@ -589,6 +589,8 @@ public interface Block extends Metadatable, Translatable, net.kyori.adventure.tr
+      * @return true if the block was destroyed
+      */
+     boolean breakNaturally(@NotNull ItemStack tool, boolean triggerEffect, boolean dropExperience);
++    
++    boolean breakNaturally(@NotNull ItemStack tool, Entity entity, boolean triggerEffect, boolean dropExperience);
+ 
+     /**
+      * Causes the block to be ticked, this is different from {@link Block#randomTick()},

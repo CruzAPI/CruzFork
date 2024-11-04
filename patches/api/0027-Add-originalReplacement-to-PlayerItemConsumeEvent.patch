@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: CruzAPI <guilhermecruz1574@gmail.com>
+Date: Sun, 6 Oct 2024 21:58:57 -0300
+Subject: [PATCH] Add originalReplacement to PlayerItemConsumeEvent
+
+
+diff --git a/src/main/java/org/bukkit/event/player/PlayerItemConsumeEvent.java b/src/main/java/org/bukkit/event/player/PlayerItemConsumeEvent.java
+index 6110d0417340710333b44312d82c7bd5165a8954..3c4cf95fae605c365db15fa773d7e2fcaa4267e7 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerItemConsumeEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerItemConsumeEvent.java
+@@ -25,16 +25,24 @@ public class PlayerItemConsumeEvent extends PlayerEvent implements Cancellable {
+     private ItemStack item;
+     private final EquipmentSlot hand;
+     @Nullable private ItemStack replacement; // Paper
++    @Nullable private ItemStack originalReplacement; // CruzFork
+ 
+     /**
+      * @param player the player consuming
+      * @param item the ItemStack being consumed
+      * @param hand the hand that was used
+      */
+-    public PlayerItemConsumeEvent(@NotNull final Player player, @NotNull final ItemStack item, @NotNull final EquipmentSlot hand) {
++    public PlayerItemConsumeEvent(@NotNull final Player player, @NotNull final ItemStack item, @NotNull final EquipmentSlot hand)
++    {
++        this(player, item, null, hand);
++    }
++    
++    public PlayerItemConsumeEvent(@NotNull final Player player, @NotNull final ItemStack item, @Nullable final ItemStack originalReplacement, @NotNull final EquipmentSlot hand)
++    {
+         super(player);
+ 
+         this.item = item;
++        this.originalReplacement = originalReplacement;
+         this.hand = hand;
+     }
+ 
+@@ -72,7 +80,13 @@ public class PlayerItemConsumeEvent extends PlayerEvent implements Cancellable {
+             this.item = item;
+         }
+     }
+-
++    
++    @Nullable
++    public ItemStack getOriginalReplacement()
++    {
++        return originalReplacement == null ? null : originalReplacement.clone();
++    }
++    
+     /**
+      * Get the hand used to consume the item.
+      *
